@@ -41,7 +41,7 @@ Coincidencia con la referencia: **100.00%** (20/20).
 ## Documentación de la Práctica - Semana 03: Taxonomía de IA en Soporte de Software Empresarial
 
 ### 1. Resumen del Módulo
-Durante la Semana 03, se implementó el módulo de clasificación y taxonomía inteligente para el Asistente de Soporte TI Híbrido. El sistema procesa de manera automatizada incidencias corporativas categorizándolas en 7 áreas clave mediante reglas léxicas con delimitadores de palabra completa (`\b`) para prevenir falsos positivos.
+Durante la Semana 03, se implementó el módulo de clasificación y taxonomía inteligente para el Asistente de Soporte TI Híbrido. El sistema procesa de manera automatizada incidencias corporativas categorizándolas en 7 áreas clave mediante reglas léxicas con delimitadores de palabra completa (`\\b`) para prevenir falsos positivos.
 
 ### 2. Arquitectura y Componentes Desarrollados
 - **Conjunto de Datos (`data/casos_ia.csv`):** 20 casos de prueba de soporte técnico empresarial contextualizados por área.
