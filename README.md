@@ -6,6 +6,12 @@ Sistema inteligente de soporte técnico diseñado para automatizar la clasificac
 ##  Arquitectura del Sistema
 
 El proyecto combina un enfoque modular y híbrido adaptado a las necesidades de soporte de software de PC corporativo:
+- **Semana 09 - Visión Artificial y Procesamiento de Imágenes:**
+Se implementó el pipeline de preprocesamiento y reconocimiento visual para transformar evidencia gráfica en datos numéricos estructurados:
+* **Extracción de Características & Contornos (Canny):** Aplicación de filtros gaussianos ($\sigma = 2.0$) y detección de gradientes para aislar los límites estructurales de los componentes de hardware reportados[cite: 2].
+* **Segmentación por Umbrales (Otsu):** Cálculo automatizado del umbral óptimo basado en el histograma para separar los objetos de interés del fondo mediante una máscara binaria[cite: 2].
+* **Análisis de Regiones Conectadas:** Etiquetado y conteo cuantitativo de grupos de píxeles para caracterizar los elementos presentes en la evidencia visual[cite: 2].
+* **Evidencia e Informe:** Artefactos generados en `artifacts/semana09_vision.png` y documentación técnica completa en `reports/semana09.md`.
 - **Semana 08 - Red Neuronal, Evidencia y Ontología:** 
   * *Red Neuronal (MLP):* Clasificador de telemetría e incidentes basado en un Perceptrón Multicapa.
   * *Base de Evidencia (SQLite):* Almacenamiento persistente y auditable de cada inferencia y metadato del modelo en `artifacts/soporte_evidencia.db`.

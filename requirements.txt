@@ -22,3 +22,6 @@ streamlit>=1.30.0
 
 #NetworkX 3.0: Es una versión principal de NetworkX, la popular biblioteca de Python para la creación, manipulación y estudio de estructuras de redes complejas.
 networkx>=3.0
+
+# scikit-image: Procesamiento de imágenes para detección de bordes (Canny), segmentación (Otsu) y regiones conectadas.
+scikit-image>=0.22.0

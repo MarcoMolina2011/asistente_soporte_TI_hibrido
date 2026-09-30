@@ -8,6 +8,7 @@ from classifiers.minimax import best_move, board as minimax_board, simular_ciber
 from classifiers.sistema_hibrido import SistemaHibridoSoporte, generar_reporte
 from classifiers.representaciones import ejecutar_representaciones_hibridas
 from classifiers.reconocimiento import ejecutar_semana_08
+from classifiers.vision import ejecutar_vision_soporte
 
 def main():
     # === SECCIÓN 1: Validación del Modelo Base ===
@@ -99,6 +100,13 @@ def main():
     ejecutar_semana_08()
     registrar_traza(ticket_id, "SEMANA_08", "Ejecución del clasificador MLP, persistencia en SQLite de imagen Base64 y ontología GraphML completada.")
     
+    print("\n" + "="*50 + "\n")
+    
+    # === SECCIÓN 8: Visión Artificial (Semana 09) ===
+    print("=== 8. VISIÓN ARTIFICIAL (SEMANA 09) ===")
+    ejecutar_vision_soporte("disco_duro.png")
+    registrar_traza(ticket_id, "SEMANA_09", "Ejecución de pipeline de visión artificial completada.")
+
     print("==================================================")
 
 if __name__ == "__main__":

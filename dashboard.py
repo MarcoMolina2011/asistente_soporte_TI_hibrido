@@ -22,6 +22,7 @@ try:
     from classifiers.astar import astar_soporte_ti, START_STATE, GOAL_STATE
     from classifiers.minimax import best_move, board as minimax_board, NODOS_INFRAESTRUCTURA, simular_ciberdefensa
     from classifiers.evaluacion_modelo import ejecutar_validacion
+    from classifiers.vision import ejecutar_vision_soporte  # Importación agregada para evitar ModuleNotFoundError
     MODULOS_CARGADOS = True
 except ImportError as e:
     MODULOS_CARGADOS = False
@@ -169,6 +170,7 @@ menu = st.sidebar.radio(
         "⚙️ Planificador A* & Minimax", 
         "🧠 Representaciones del Reconocimiento",
         "🧠 Red Neuronal & Ontología",
+        "👁️ Visión Artificial (Semana 09)",
         "👤 Portal de Usuario",
         "📚 Base de Conocimiento (KB)", 
         "📜 Trazas de Auditoría"
@@ -213,6 +215,7 @@ if menu == "📊 Resumen Ejecutivo":
         st.success("✅ Sistema Híbrido (Semana 05) - Operativo con Reglas y TF-IDF")
         st.success("✅ Representaciones del Reconocimiento (Semana 07) - Operativo")
         st.success("✅ Red Neuronal, Imagen Base64, SQLite y Ontología (Semana 08) - Operativo")
+        st.success("✅ Visión Artificial (Semana 09) - Operativo")
         st.success("✅ Motor de Auditoría y Trazas - Registrando en artifacts/audit.log")
 
 # --- 2. Matriz de Confusión ---
@@ -618,6 +621,61 @@ elif menu == "🧠 Red Neuronal & Ontología":
         else:
             st.warning("Archivo GraphML no encontrado en artifacts/.")
 
+# --- 6.1 Visión Artificial (Semana 09) ---
+elif menu == "👁️ Visión Artificial (Semana 09)":
+    st.title("👁️ Visión Artificial y Procesamiento de Imágenes")
+    st.markdown("Transformación de evidencia visual en información numérica mediante extracción de características, detección de contornos (Canny) y segmentación por umbrales (Otsu).")
+
+    # NUEVO: Selector de imágenes de la Base de Conocimiento
+    st.subheader("📚 Analizar Evidencia desde la Base de Conocimiento")
+    
+    opciones_imagenes = {
+        "💻 Falla 1: Disco Duro Dañado (Sectores defectuosos)": "disco_duro.png",
+        "🟦 Falla 2: Pantalla Azul (Volcado de memoria)": "pantalla_azul.png",
+        "🌐 Falla 3: Router sin conexión (Luces apagadas)": "router.png"
+    }
+    
+    imagen_seleccionada = st.selectbox("Selecciona un caso de estudio predefinido para procesar:", list(opciones_imagenes.keys()))
+    archivo_imagen = opciones_imagenes[imagen_seleccionada]
+
+    if st.button("Procesar Imagen Seleccionada"):
+        if MODULOS_CARGADOS:
+            with st.spinner(f"Procesando bordes, umbrales y regiones de {archivo_imagen}..."):
+                try:
+                    # Pasamos el archivo seleccionado a la función backend
+                    umbral, regiones = ejecutar_vision_soporte(nombre_imagen=archivo_imagen)
+                    
+                    if umbral is not None:
+                        st.session_state['otsu_thresh'] = umbral
+                        st.session_state['otsu_regs'] = regiones
+                        st.success(f"✅ ¡Pipeline ejecutado! Imagen '{archivo_imagen}' procesada correctamente.")
+                    else:
+                        st.error(f"❌ No se encontró la imagen '{archivo_imagen}' en la carpeta 'data/'. ¡Asegúrate de guardarla allí primero!")
+                except Exception as e:
+                    st.error(f"Error en el procesamiento: {e}")
+        else:
+            st.error("Los módulos no se cargaron correctamente. Verifica las importaciones.")
+
+    img_path = Path("artifacts/semana09_vision.png")
+    if img_path.exists():
+        st.image(str(img_path), caption="Pipeline de Visión: Imagen Original ➔ Bordes (Canny) ➔ Máscara Binaria (Otsu)", use_container_width=True)
+        
+        if 'otsu_thresh' in st.session_state and 'otsu_regs' in st.session_state:
+            st.markdown("### 📊 Resultados del Procesamiento Numérico")
+            col1, col2 = st.columns(2)
+            col1.metric("Umbral Otsu (Corte de Intensidad)", f"{st.session_state['otsu_thresh']:.4f}")
+            col2.metric("Regiones Conectadas Detectadas", st.session_state['otsu_regs'])
+            st.markdown("---")
+            
+        st.info("""
+        **Análisis Técnico del Procesamiento:**
+        * **Contornos (Canny):** Identifica los cambios bruscos de intensidad en los píxeles, marcando los límites físicos y estructurales del hardware defectuoso para aislar su forma.
+        * **Umbral Automático (Otsu):** Calcula matemáticamente el punto óptimo en el histograma de la imagen para separar los píxeles en dos clases (claro/oscuro), generando una máscara binaria.
+        * **Regiones Conectadas:** La máscara permite al sistema contar grupos de píxeles unidos, lo cual es el primer paso para aislar piezas o zonas afectadas antes de pasarlas a una red neuronal convolucional.
+        """)
+    else:
+        st.warning("⚠️ No se ha generado la evidencia visual. Selecciona una imagen y procesa el pipeline.")
+
 # --- 7. Portal de Usuario ---
 elif menu == "👤 Portal de Usuario":
     st.title("👤 Portal de Usuario / Cliente Final")
@@ -718,7 +776,7 @@ elif menu == "📜 Trazas de Auditoría":
             
         st.caption(f"Mostrando {len(regs_filtrados)} de {total_logs} líneas registradas.")
         
-        tab_tabla, tab_raw = st.tabs(["📋 Vista Estructurada", "🖥️ Consola Raw"])
+        tab_tabla, tab_raw = st.tabs(["📋 Vista Estructurada", "🖥️️ Consola Raw"])
         
         with tab_tabla:
             if regs_filtrados:
