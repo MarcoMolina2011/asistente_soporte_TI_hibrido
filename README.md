@@ -6,6 +6,10 @@ Sistema inteligente de soporte técnico diseñado para automatizar la clasificac
 ##  Arquitectura del Sistema
 
 El proyecto combina un enfoque modular y híbrido adaptado a las necesidades de soporte de software de PC corporativo:
+- **Histogramas, Regiones y Texturas LBP (Semana 10):**
+* **Análisis Comparativo:** Evaluación morfológica y visualización lado a lado entre componentes en estado óptimo (sanos) y componentes con averías específicas (golpes, rayones, fallas de red o pantallas sin video).
+* **Descriptores de Textura:** Implementación de *Local Binary Patterns (LBP)* para caracterizar superficies rugosas y patrones irregulares.
+* **Vector de Características Consolidado:** Integración de estadísticas de región, histograma de intensidad y texturas LBP en un vector multidimensional persistido en `artifacts/semana10_features.npy`.
 - **Semana 09 - Visión Artificial y Procesamiento de Imágenes:**
 Se implementó el pipeline de preprocesamiento y reconocimiento visual para transformar evidencia gráfica en datos numéricos estructurados:
 * **Extracción de Características & Contornos (Canny):** Aplicación de filtros gaussianos ($\sigma = 2.0$) y detección de gradientes para aislar los límites estructurales de los componentes de hardware reportados[cite: 2].

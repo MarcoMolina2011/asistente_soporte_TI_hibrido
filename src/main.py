@@ -1,4 +1,4 @@
-# 1. Importación de módulos internos del proyecto (Auditoría, Reglas, Clasificadores e IA)
+# src/main.py
 from audit.logger_audit import registrar_traza
 from rules.prioritizer import calcular_prioridad
 from classifiers.taxonomia import classify_problem
@@ -9,6 +9,7 @@ from classifiers.sistema_hibrido import SistemaHibridoSoporte, generar_reporte
 from classifiers.representaciones import ejecutar_representaciones_hibridas
 from classifiers.reconocimiento import ejecutar_semana_08
 from classifiers.vision import ejecutar_vision_soporte
+from classifiers.texturas import procesar_imagen_proyecto, FALLOS_DESCRIPCION
 
 def main():
     # === SECCIÓN 1: Validación del Modelo Base ===
@@ -106,6 +107,15 @@ def main():
     print("=== 8. VISIÓN ARTIFICIAL (SEMANA 09) ===")
     ejecutar_vision_soporte("disco_duro.png")
     registrar_traza(ticket_id, "SEMANA_09", "Ejecución de pipeline de visión artificial completada.")
+
+    print("\n" + "="*50 + "\n")
+
+    # === SECCIÓN 9: Histogramas y Texturas LBP (Semana 10) ===
+    print("=== 9. HISTOGRAMAS Y TEXTURAS LBP (SEMANA 10) ===")
+    img, mask, hi, hl, feat = procesar_imagen_proyecto("disco_duro_dañado_por_golpe.jpg")
+    print(f"Vector de características extraído para 'disco_duro_dañado_por_golpe.jpg': {feat}")
+    print(f"Diagnóstico asociado: {FALLOS_DESCRIPCION.get('disco_duro_dañado_por_golpe.jpg')}")
+    registrar_traza(ticket_id, "SEMANA_10", "Análisis de características vectoriales y texturas LBP completado.")
 
     print("==================================================")
 
