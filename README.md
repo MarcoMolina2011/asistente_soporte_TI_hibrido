@@ -6,6 +6,10 @@ Sistema inteligente de soporte técnico diseñado para automatizar la clasificac
 ##  Arquitectura del Sistema
 
 El proyecto combina un enfoque modular y híbrido adaptado a las necesidades de soporte de software de PC corporativo:
+- **Semana 11. Benchmark de Modelos y Toma de Decisiones Técnicas**
+* **Evaluación Comparativa:** Ejecución de benchmark automatizado entre tres modelos de aprendizaje automático (**Logistic Regression**, **Random Forest** y **MLPClassifier**) bajo el mismo protocolo de partición de datos (`train_test_split` con semilla fija y estratificación).
+* **Evidencia Persistente:** Generación y almacenamiento automático de las métricas de precisión (*accuracy*) y tiempo de entrenamiento (`fit_seconds`) en `artifacts/benchmark.csv`.
+* **Registro de Decisión Arquitectónica (ADR):** Documentación técnica formal generada de forma automática en `reports/semana11_adr.md`, justificando la elección del modelo óptimo en función del balance entre desempeño predictivo y restricciones del sistema de soporte.
 - **Histogramas, Regiones y Texturas LBP (Semana 10):**
 * **Análisis Comparativo:** Evaluación morfológica y visualización lado a lado entre componentes en estado óptimo (sanos) y componentes con averías específicas (golpes, rayones, fallas de red o pantallas sin video).
 * **Descriptores de Textura:** Implementación de *Local Binary Patterns (LBP)* para caracterizar superficies rugosas y patrones irregulares.
@@ -39,7 +43,8 @@ Se implementó el pipeline de preprocesamiento y reconocimiento visual para tran
 | :--- | :--- |
 | **Python 3.13+** | Lenguaje base del motor lógico y orquestador (`main.py`). |
 | **Streamlit** | Framework para la construcción del Dashboard interactivo. |
-| **Scikit-learn** | Clasificación de texto, vectorización (TF-IDF) y similitud coseno. |
+| **Plotly** | Generación de gráficos analíticos interactivos de desempeño en el dashboard. |
+| **Scikit-learn** | Clasificación de texto, vectorización (TF-IDF), modelos de Machine Learning (Logistic Regression, Random Forest, MLPClassifier) y métricas. |
 | **Pandas / NumPy** | Procesamiento matemático, operaciones vectoriales y DataFrames. |
 | **Pydantic** | Validación estricta de esquemas y estructura de tickets. |
 

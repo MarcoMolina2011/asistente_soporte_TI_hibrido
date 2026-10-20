@@ -328,4 +328,93 @@
 2026-10-10 00:02:23 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_08 | DETALLES: Ejecución del clasificador MLP, persistencia en SQLite de imagen Base64 y ontología GraphML completada.
 2026-10-10 00:02:24 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_09 | DETALLES: Ejecución de pipeline de visión artificial completada.
 2026-10-10 00:02:25 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_10 | DETALLES: Análisis de características vectoriales y texturas LBP completado.
+<<<<<<< HEAD
 >>>>>>> b97f2563c91ba7d3d3f2fe79494ac819d41992ac
+=======
+2026-10-15 13:58:21 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: RECEPCION | DETALLES: Ticket recibido con descripción: 'El departamento de Contabilidad reporta que la aplicacion de nomina se cierra inesperadamente al generar el informe fiscal mensual.'
+2026-10-15 13:58:21 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: TAXONOMIA | DETALLES: Categoría principal: 'Seguridad y Análisis de Errores (Logs)' | Detectadas: ['Seguridad y Análisis de Errores (Logs)']
+2026-10-15 13:58:21 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: PRIORIZACION | DETALLES: Impacto: Alto, Urgencia: Alto -> Asignada Prioridad: Crítica
+2026-10-15 13:58:21 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SISTEMA_HIBRIDO | DETALLES: Ejecución completa del sistema híbrido de la Semana 05 con base de conocimiento.
+2026-10-15 13:58:21 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: REPRESENTACIONES | DETALLES: Ejecución de representaciones numérica, simbólica y de autómata (Semana 07) completada.
+2026-10-15 13:58:27 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_08 | DETALLES: Ejecución del clasificador MLP, persistencia en SQLite de imagen Base64 y ontología GraphML completada.
+2026-10-15 13:58:42 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_09 | DETALLES: Ejecución de pipeline de visión artificial completada.
+2026-10-15 13:58:46 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_10 | DETALLES: Análisis de características vectoriales y texturas LBP completado.
+2026-10-15 13:59:11 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_11 | DETALLES: Ejecución de benchmark comparativo (Logistic, Forest, MLP) y generación de CSV completada.
+2026-10-16 09:36:07 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: RECEPCION | DETALLES: Ticket recibido con descripción: 'El departamento de Contabilidad reporta que la aplicacion de nomina se cierra inesperadamente al generar el informe fiscal mensual.'
+2026-10-16 09:36:07 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: TAXONOMIA | DETALLES: Categoría principal: 'Seguridad y Análisis de Errores (Logs)' | Detectadas: ['Seguridad y Análisis de Errores (Logs)']
+2026-10-16 09:36:07 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: PRIORIZACION | DETALLES: Impacto: Alto, Urgencia: Alto -> Asignada Prioridad: Crítica
+2026-10-16 09:36:07 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SISTEMA_HIBRIDO | DETALLES: Ejecución completa del sistema híbrido de la Semana 05 con base de conocimiento.
+2026-10-16 09:36:07 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: REPRESENTACIONES | DETALLES: Ejecución de representaciones numérica, simbólica y de autómata (Semana 07) completada.
+2026-10-16 09:36:07 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_08 | DETALLES: Ejecución del clasificador MLP, persistencia en SQLite de imagen Base64 y ontología GraphML completada.
+2026-10-16 09:36:09 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_09 | DETALLES: Ejecución de pipeline de visión artificial completada.
+2026-10-16 09:36:09 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_10 | DETALLES: Análisis de características vectoriales y texturas LBP completado.
+2026-10-16 09:36:11 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_11 | DETALLES: Ejecución de benchmark comparativo (Logistic, Forest, MLP) y generación de CSV completada.
+2026-10-16 09:46:25 - [INFO] - Orquestador principal iniciado.
+2026-10-16 09:46:25 - [INFO] - Iniciando ejecución del pipeline de benchmark (Semana 11).
+2026-10-16 09:46:25 - [INFO] - Modelo evaluado: logistic | Accuracy: 0.9778 | Tiempo: 0.048s
+2026-10-16 09:46:26 - [INFO] - Modelo evaluado: forest | Accuracy: 0.9667 | Tiempo: 0.741s
+2026-10-16 09:46:27 - [INFO] - Modelo evaluado: mlp | Accuracy: 0.9800 | Tiempo: 1.291s
+2026-10-16 09:46:27 - [INFO] - Benchmark guardado exitosamente en artifacts\benchmark.csv
+2026-10-16 09:46:27 - [INFO] - Informe ADR generado automáticamente en reports\semana11_adr.md
+2026-10-16 09:46:27 - [INFO] - Pipeline completado exitosamente.
+2026-10-16 18:52:42 - [INFO] - Orquestador principal iniciado.
+2026-10-16 18:52:42 - [INFO] - Iniciando ejecución del pipeline de benchmark (Semana 11).
+2026-10-16 18:52:43 - [INFO] - Modelo evaluado: logistic | Accuracy: 0.9778 | Tiempo: 0.175s
+2026-10-16 18:52:44 - [INFO] - Modelo evaluado: forest | Accuracy: 0.9667 | Tiempo: 0.782s
+2026-10-16 18:52:46 - [INFO] - Modelo evaluado: mlp | Accuracy: 0.9800 | Tiempo: 3.703s
+2026-10-16 18:52:46 - [INFO] - Benchmark guardado exitosamente en artifacts\benchmark.csv
+2026-10-16 18:52:46 - [INFO] - Informe ADR generado automáticamente en reports\semana11_adr.md
+2026-10-16 18:52:46 - [INFO] - Pipeline completado exitosamente.
+2026-10-16 19:13:40 - [INFO] - Orquestador principal iniciado.
+2026-10-16 19:13:40 - [INFO] - Iniciando ejecución del pipeline de benchmark (Semana 11).
+2026-10-16 19:13:40 - [INFO] - Modelo evaluado: logistic | Accuracy: 0.9778 | Tiempo: 0.080s
+2026-10-16 19:13:41 - [INFO] - Modelo evaluado: forest | Accuracy: 0.9667 | Tiempo: 0.558s
+2026-10-16 19:13:44 - [INFO] - Modelo evaluado: mlp | Accuracy: 0.9800 | Tiempo: 3.584s
+2026-10-16 19:13:44 - [INFO] - Benchmark guardado exitosamente en artifacts\benchmark.csv
+2026-10-16 19:13:44 - [INFO] - Informe ADR generado automáticamente en reports\semana11_adr.md
+2026-10-16 19:13:44 - [INFO] - Pipeline completado exitosamente.
+2026-10-16 19:20:33 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: RECEPCION | DETALLES: Ticket recibido con descripción: 'El departamento de Contabilidad reporta que la aplicacion de nomina se cierra inesperadamente al generar el informe fiscal mensual.'
+2026-10-16 19:20:33 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: TAXONOMIA | DETALLES: Categoría principal: 'Seguridad y Análisis de Errores (Logs)' | Detectadas: ['Seguridad y Análisis de Errores (Logs)']
+2026-10-16 19:20:33 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: PRIORIZACION | DETALLES: Impacto: Alto, Urgencia: Alto -> Asignada Prioridad: Crítica
+2026-10-16 19:20:33 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SISTEMA_HIBRIDO | DETALLES: Ejecución completa del sistema híbrido de la Semana 05 con base de conocimiento.
+2026-10-16 19:20:33 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: REPRESENTACIONES | DETALLES: Ejecución de representaciones numérica, simbólica y de autómata (Semana 07) completada.
+2026-10-16 19:20:34 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_08 | DETALLES: Ejecución del clasificador MLP, persistencia en SQLite de imagen Base64 y ontología GraphML completada.
+2026-10-16 19:20:35 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_09 | DETALLES: Ejecución de pipeline de visión artificial completada.
+2026-10-16 19:20:35 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_10 | DETALLES: Análisis de características vectoriales y texturas LBP completado.
+2026-10-16 19:20:40 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_11 | DETALLES: Benchmark comparativo de modelos ejecutado y reporte ADR generado en reports/semana11_adr.md.
+2026-10-17 15:03:44 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: RECEPCION | DETALLES: Ticket recibido con descripción: 'El departamento de Contabilidad reporta que la aplicacion de nomina se cierra inesperadamente al generar el informe fiscal mensual.'
+2026-10-17 15:03:44 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: TAXONOMIA | DETALLES: Categoría principal: 'Seguridad y Análisis de Errores (Logs)' | Detectadas: ['Seguridad y Análisis de Errores (Logs)']
+2026-10-17 15:03:44 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: PRIORIZACION | DETALLES: Impacto: Alto, Urgencia: Alto -> Asignada Prioridad: Crítica
+2026-10-17 15:03:44 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SISTEMA_HIBRIDO | DETALLES: Ejecución completa del sistema híbrido de la Semana 05 con base de conocimiento.
+2026-10-17 15:03:44 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: REPRESENTACIONES | DETALLES: Ejecución de representaciones numérica, simbólica y de autómata (Semana 07) completada.
+2026-10-17 15:03:44 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_08 | DETALLES: Ejecución del clasificador MLP, persistencia en SQLite de imagen Base64 y ontología GraphML completada.
+2026-10-17 15:03:46 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_09 | DETALLES: Ejecución de pipeline de visión artificial completada.
+2026-10-17 15:03:47 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_10 | DETALLES: Análisis de características vectoriales y texturas LBP completado.
+2026-10-17 15:03:49 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_11_BENCHMARK | DETALLES: Benchmark completado sin errores. Modelo ganador: 'MLPClassifier (Red Neuronal)' con Accuracy de 98.00% y tiempo de entrenamiento de 1.592s.
+2026-10-17 15:32:40 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: RECEPCION | DETALLES: Ticket recibido con descripción: 'El departamento de Contabilidad reporta que la aplicacion de nomina se cierra inesperadamente al generar el informe fiscal mensual.'
+2026-10-17 15:32:40 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: TAXONOMIA | DETALLES: Categoría principal: 'Seguridad y Análisis de Errores (Logs)' | Detectadas: ['Seguridad y Análisis de Errores (Logs)']
+2026-10-17 15:32:40 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: PRIORIZACION | DETALLES: Impacto: Alto, Urgencia: Alto -> Asignada Prioridad: Crítica
+2026-10-17 15:32:40 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SISTEMA_HIBRIDO | DETALLES: Ejecución completa del sistema híbrido de la Semana 05 con base de conocimiento.
+2026-10-17 15:32:40 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: REPRESENTACIONES | DETALLES: Ejecución de representaciones numérica, simbólica y de autómata (Semana 07) completada.
+2026-10-17 15:32:41 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_08 | DETALLES: Ejecución del clasificador MLP, persistencia en SQLite de imagen Base64 y ontología GraphML completada.
+2026-10-17 15:32:42 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_09 | DETALLES: Ejecución de pipeline de visión artificial completada.
+2026-10-17 15:32:42 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_10 | DETALLES: Análisis de características vectoriales y texturas LBP completado.
+2026-10-17 15:32:46 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_11_BENCHMARK | DETALLES: Benchmark completado sin errores. Modelo ganador: 'MLPClassifier (Red Neuronal)' con Accuracy de 98.00% y tiempo de entrenamiento de 2.163s.
+2026-10-17 15:41:02 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: RECEPCION | DETALLES: Ticket recibido con descripción: 'El departamento de Contabilidad reporta que la aplicacion de nomina se cierra inesperadamente al generar el informe fiscal mensual.'
+2026-10-17 15:41:02 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: TAXONOMIA | DETALLES: Categoría principal: 'Seguridad y Análisis de Errores (Logs)' | Detectadas: ['Seguridad y Análisis de Errores (Logs)']
+2026-10-17 15:41:02 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: PRIORIZACION | DETALLES: Impacto: Alto, Urgencia: Alto -> Asignada Prioridad: Crítica
+2026-10-17 15:41:02 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SISTEMA_HIBRIDO | DETALLES: Ejecución completa del sistema híbrido de la Semana 05 con base de conocimiento.
+2026-10-17 15:41:02 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: REPRESENTACIONES | DETALLES: Ejecución de representaciones numérica, simbólica y de autómata (Semana 07) completada.
+2026-10-17 15:41:02 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_08 | DETALLES: Ejecución del clasificador MLP, persistencia en SQLite de imagen Base64 y ontología GraphML completada.
+2026-10-17 15:41:03 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_09 | DETALLES: Ejecución de pipeline de visión artificial completada.
+2026-10-17 15:41:04 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_10 | DETALLES: Análisis de características vectoriales y texturas LBP completado.
+2026-10-17 15:43:25 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: RECEPCION | DETALLES: Ticket recibido con descripción: 'El departamento de Contabilidad reporta que la aplicacion de nomina se cierra inesperadamente al generar el informe fiscal mensual.'
+2026-10-17 15:43:25 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: TAXONOMIA | DETALLES: Categoría principal: 'Seguridad y Análisis de Errores (Logs)' | Detectadas: ['Seguridad y Análisis de Errores (Logs)']
+2026-10-17 15:43:25 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: PRIORIZACION | DETALLES: Impacto: Alto, Urgencia: Alto -> Asignada Prioridad: Crítica
+2026-10-17 15:43:25 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SISTEMA_HIBRIDO | DETALLES: Ejecución completa del sistema híbrido de la Semana 05 con base de conocimiento.
+2026-10-17 15:43:25 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: REPRESENTACIONES | DETALLES: Ejecución de representaciones numérica, simbólica y de autómata (Semana 07) completada.
+2026-10-17 15:43:26 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_08 | DETALLES: Ejecución del clasificador MLP, persistencia en SQLite de imagen Base64 y ontología GraphML completada.
+2026-10-17 15:43:27 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_09 | DETALLES: Ejecución de pipeline de visión artificial completada.
+2026-10-17 15:43:27 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_10 | DETALLES: Análisis de características vectoriales y texturas LBP completado.
+2026-10-17 15:43:30 - [INFO] - TICKET_ID: TICK-2026-001 | ACCIÓN: SEMANA_11_BENCHMARK | DETALLES: Benchmark completado sin errores. Modelo ganador: 'MLPClassifier (Red Neuronal)' con Accuracy de 98.00% y tiempo de entrenamiento de 1.452s.
+>>>>>>> 097f7b6fb9475ffccb87522c9c068bf154c4b8e0

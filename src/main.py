@@ -10,6 +10,7 @@ from classifiers.representaciones import ejecutar_representaciones_hibridas
 from classifiers.reconocimiento import ejecutar_semana_08
 from classifiers.vision import ejecutar_vision_soporte
 from classifiers.texturas import procesar_imagen_proyecto, FALLOS_DESCRIPCION
+from classifiers.benchmark import ejecutar_benchmark_semana11
 
 def main():
     # === SECCIÓN 1: Validación del Modelo Base ===
@@ -117,7 +118,16 @@ def main():
     print(f"Diagnóstico asociado: {FALLOS_DESCRIPCION.get('disco_duro_dañado_por_golpe.jpg')}")
     registrar_traza(ticket_id, "SEMANA_10", "Análisis de características vectoriales y texturas LBP completado.")
 
+    print("\n" + "="*50 + "\n")
+
+    # === SECCIÓN 10: Benchmark y Decisiones de Modelos con Evidencia (Semana 11) ===
+    print("=== 10. BENCHMARK DE MODELOS Y DECISIONES TÉCNICAS (SEMANA 11) ===")
+    df_benchmark = ejecutar_benchmark_semana11(ticket_id)
+    print("\nResultados del Benchmark comparativo:")
+    print(df_benchmark.to_string(index=False))
+
     print("==================================================")
+    print("¡PIPELINE COMPLETO DE LA SEMANA 02 A LA SEMANA 11 EJECUTADO EXITOSAMENTE!")
 
 if __name__ == "__main__":
     main()

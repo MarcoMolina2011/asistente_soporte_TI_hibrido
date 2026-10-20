@@ -1,10 +1,10 @@
 # Dependencias principales del Asistente de Soporte TI
 # Se usa '>=' en lugar de '==' para permitir compatibilidad con Python 3.11, 3.12, 3.13 y 3.14
 
-# scikit-learn: Librería de Machine Learning utilizada para vectorización TF-IDF, Regresión Logística, métricas y evaluación de modelos.
+# scikit-learn: Librería de Machine Learning utilizada para vectorización TF-IDF, Regresión Logística, Random Forest, MLPClassifier, métricas y evaluación de modelos.
 scikit-learn>=1.5.0
 
-# pandas: Estructuración y manipulación de datos mediante DataFrames (para tablas de resultados, lectura de CSV y métricas).
+# pandas: Estructuración y manipulación de datos mediante DataFrames (para tablas de resultados, lectura de CSV de benchmark y métricas).
 pandas>=2.2.0
 
 # numpy: Operaciones matemáticas vectorizadas de alto rendimiento y gestión de arreglos numéricos multidimensionales.
@@ -13,15 +13,18 @@ numpy>=1.26.0
 # pydantic: Validación de datos de entrada y definición de esquemas estructurados mediante tipos nativos de Python.
 pydantic>=2.6.0
 
-# matplotlib: Generación y renderizado visual de gráficos estadísticos (como la matriz de confusión y gráficos de barras).
+# matplotlib: Generación y renderizado visual de gráficos estadísticos (matriz de confusión y análisis comparativo).
 matplotlib>=3.8.0
 
 # Framework para el Dashboard interactivo (dashboard.py)
 # streamlit: Creación de la interfaz web interactiva para visualizar métricas, simuladores y logs de auditoría en tiempo real.
 streamlit>=1.30.0
 
-#NetworkX 3.0: Es una versión principal de NetworkX, la popular biblioteca de Python para la creación, manipulación y estudio de estructuras de redes complejas.
+# plotly: Librería de gráficos interactivos avanzados utilizada para la visualización dinámica del benchmark de modelos (Semana 11).
+plotly>=5.18.0
+
+# NetworkX: Biblioteca de Python para la creación, manipulación y estudio de estructuras de redes complejas y ontologías (GraphML).
 networkx>=3.0
 
-# scikit-image: Procesamiento de imágenes para detección de bordes (Canny), segmentación (Otsu) y regiones conectadas.
+# scikit-image: Procesamiento de imágenes para detección de bordes (Canny), segmentación (Otsu), texturas LBP y regiones conectadas.
 scikit-image>=0.22.0
