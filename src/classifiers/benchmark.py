@@ -1,21 +1,36 @@
 # src/semana11_benchmark.py
+
+# Importación de Path para manipulación multiplataforma de rutas
 from pathlib import Path
+# Importación de perf_counter para medición de tiempos de ejecución con alta precisión
 from time import perf_counter
+# Importación de pickle para la serialización y guardado de objetos de Python (modelos entrenados)
 import pickle
+# Importación de pandas para la gestión de tablas y exportación a archivos CSV
 import pandas as pd
+# Importación del dataset de dígitos de scikit-learn como base de referencia estándar
 from sklearn.datasets import load_digits
+# Importación de train_test_split para dividir los datos en conjuntos de entrenamiento y prueba
 from sklearn.model_selection import train_test_split
+# Importación de make_pipeline para encadenar pasos de preprocesamiento y estimadores
 from sklearn.pipeline import make_pipeline
+# Importación de StandardScaler para normalizar y escalar las características numéricas
 from sklearn.preprocessing import StandardScaler
+# Importación del modelo de Regresión Logística (Línea Base)
 from sklearn.linear_model import LogisticRegression
+# Importación del modelo de Random Forest (Ensamble de árboles)
 from sklearn.ensemble import RandomForestClassifier
+# Importación del modelo MLPClassifier (Red Neuronal Perceptrón Multicapa)
 from sklearn.neural_network import MLPClassifier
+# Importación de accuracy_score para evaluar la precisión de predicción de los modelos
 from sklearn.metrics import accuracy_score
 
+# Bloque protegido para intentar importar el módulo de auditoría del proyecto
 try:
     from audit.logger_audit import registrar_traza
     MODULO_AUDIT_DISPONIBLE = True
 except ImportError:
+    # Si no se encuentra el módulo, se desactiva de forma segura sin romper el script
     MODULO_AUDIT_DISPONIBLE = False
 
 def ejecutar_benchmark_semana11(ticket_id="TICK-SEMANA-11"):
@@ -24,18 +39,20 @@ def ejecutar_benchmark_semana11(ticket_id="TICK-SEMANA-11"):
     serializa el modelo ganador en artifacts/mejor_modelo.pkl, registra la auditoría
     y genera un informe ADR completo alineado con los criterios de revisión.
     """
+    # Definición de la carpeta artifacts para guardar resultados y modelos
     artifacts_dir = Path("artifacts")
     artifacts_dir.mkdir(parents=True, exist_ok=True)
+    # Definición de la carpeta reports para guardar los informes generados
     reports_dir = Path("reports")
     reports_dir.mkdir(parents=True, exist_ok=True)
     
-    # 1. Mismo dataset y misma división de datos (Protocolo Estricto)
+    # 1. Protocolo estricto: carga del dataset y división controlada con semilla fija y estratificación
     X, y = load_digits(return_X_y=True)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.25, random_state=42, stratify=y
     )
     
-    # 2. Tres modelos funcionales requeridos por la rúbrica
+    # 2. Definición de un diccionario con los tres modelos funcionales obligatorios por la rúbrica
     models = {
         "Logistic Regression (Línea Base)": make_pipeline(StandardScaler(), LogisticRegression(max_iter=1500)),
         "Random Forest (Ensamble)": RandomForestClassifier(n_estimators=250, random_state=42, n_jobs=-1),
@@ -46,34 +63,44 @@ def ejecutar_benchmark_semana11(ticket_id="TICK-SEMANA-11"):
     entrenados = {}
     
     print("Iniciando benchmark de modelos (Semana 11)...")
+    # Iteración sobre cada modelo para realizar su entrenamiento y medición de rendimiento
     for name, model in models.items():
+        # Inicio del cronómetro de alta precisión antes del entrenamiento
         start = perf_counter()
+        # Entrenamiento del modelo con los datos de entrenamiento
         model.fit(X_train, y_train)
+        # Cálculo del tiempo total transcurrido en segundos
         elapsed = perf_counter() - start
         
+        # Evaluación de la precisión (accuracy) utilizando el conjunto de prueba
         acc = accuracy_score(y_test, model.predict(X_test))
+        # Almacenamiento de las métricas en una lista de diccionarios
         rows.append({"modelo": name, "accuracy": acc, "fit_seconds": elapsed})
+        # Guardado temporal del objeto entrenado en el diccionario
         entrenados[name] = model
         print(f" -> Modelo [{name}] evaluado | Accuracy: {acc:.4f} | Tiempo: {elapsed:.3f}s")
         
+    # Creación del DataFrame de Pandas con los resultados y ordenamiento descendente por precisión
     df = pd.DataFrame(rows).sort_values("accuracy", ascending=False)
     
-    # 3. Guardar persistencia en CSV
+    # 3. Guardar la persistencia de los resultados en un archivo CSV oficial
     csv_path = artifacts_dir / "benchmark.csv"
     df.to_csv(csv_path, index=False)
     
-    # 4. Extraer el nombre y el objeto real del modelo ganador para serialización
+    # 4. Extracción de los datos del modelo que obtuvo el mejor rendimiento global
     mejor_nombre = df.iloc[0]["modelo"]
     mejor_acc = df.iloc[0]["accuracy"] * 100
     mejor_tiempo = df.iloc[0]["fit_seconds"]
     
+    # Recuperación del objeto real del modelo ganador desde el diccionario
     mejor_modelo_obj = entrenados[mejor_nombre]
     
+    # Serialización del modelo ganador en un archivo binario mediante pickle
     modelo_path = artifacts_dir / "mejor_modelo.pkl"
     with open(modelo_path, "wb") as f:
         pickle.dump(mejor_modelo_obj, f)
         
-    # 5. Registro automático en el log de auditoría
+    # 5. Registro automático de la traza de ejecución en el sistema de auditoría
     mensaje_auditoria = (
         f"Benchmark completado sin errores. Modelo ganador: '{mejor_nombre}' "
         f"con Accuracy de {mejor_acc:.2f}% y tiempo de entrenamiento de {mejor_tiempo:.3f}s."
@@ -83,7 +110,7 @@ def ejecutar_benchmark_semana11(ticket_id="TICK-SEMANA-11"):
     else:
         print(f"[AUDIT LOG] {mensaje_auditoria}")
 
-    # 6. Generación del informe ADR completo justificando todos los criterios de revisión
+    # 6. Generación automatizada del informe técnico en formato Markdown (ADR)
     contenido_adr = f"""# ADR (Architecture Decision Record) - Semana 11: Benchmark y Selección de Modelo
 
 **Proyecto:** Asistente de Soporte TI Híbrido  
@@ -107,6 +134,7 @@ Los tres modelos funcionales implementados obtuvieron los siguientes resultados 
 | Modelo | Accuracy | Tiempo de Entrenamiento (s) |
 | :--- | :--- | :--- |
 """
+    # Inserción dinámica de los datos del DataFrame en la tabla Markdown del ADR
     for _, row in df.iterrows():
         contenido_adr += f"| **{row['modelo']}** | {row['accuracy']:.4f} | {row['fit_seconds']:.3f} |\n"
         
@@ -129,6 +157,7 @@ A partir de la visualización de los resultados en el dashboard, se identifican 
 ## 7. Conclusión de Ingeniería
 El pipeline se ejecutó satisfactoriamente sin errores, generando las evidencias persistentes en `artifacts/benchmark.csv`, el modelo serializado, el registro de auditoría en `audit.log` y el presente informe ADR, cumpliendo a cabalidad con la trazabilidad requerida en el repositorio GitHub.
 """
+    # Escritura y guardado del archivo ADR físico en la carpeta reports
     adr_path = reports_dir / "semana11_adr.md"
     with open(adr_path, "w", encoding="utf-8") as f:
         f.write(contenido_adr)
@@ -141,4 +170,5 @@ El pipeline se ejecutó satisfactoriamente sin errores, generando las evidencias
     return df
 
 if __name__ == "__main__":
+    # Ejecución directa del script de benchmark si se invoca desde la terminal
     ejecutar_benchmark_semana11()

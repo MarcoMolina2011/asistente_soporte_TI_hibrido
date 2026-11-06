@@ -24,6 +24,8 @@ try:
     from classifiers.evaluacion_modelo import ejecutar_validacion
     from classifiers.vision import ejecutar_vision_soporte
     from classifiers.texturas import procesar_imagen_proyecto
+    from classifiers.texturas import procesar_imagen_proyecto, FALLOS_DESCRIPCION
+    from classifiers.motor_inferencia import inferir_con_explicacion, REGLAS_SOPORTE_TI  # <--- NUEVO S13 AVANZADO
     MODULOS_CARGADOS = True
 except ImportError as e:
     MODULOS_CARGADOS = False
@@ -356,6 +358,7 @@ menu = st.sidebar.radio(
         "Visión Artificial (Semana 09)",
         "Histogramas y Texturas LBP (Semana 10)",
         "Benchmark y Decisiones de Modelos (Semana 11)",
+        "Motor de Inferencia (Semana 13)",
         "Portal de Usuario",
         "Base de Conocimiento (KB)", 
         "Trazas de Auditoría"
@@ -409,6 +412,7 @@ if menu == "Resumen Ejecutivo":
             ("Visión Artificial (Semana 09)", ""),
             ("Histogramas y Texturas LBP (Semana 10)", "Extracción de Features Vectoriales"),
             ("Benchmark de Modelos y ADR (Semana 11)", "Evaluación y Serialización en artifacts/"),
+            ("Motor de Inferencia Avanzado (Semana 13)", "Reglas Horn, Trazas y Explicabilidad"),
             ("Motor de Auditoría y Trazas", "Registrando en artifacts/audit.log"),
         ]
         filas_estado = "".join(
@@ -610,11 +614,13 @@ elif menu == "Representaciones del Reconocimiento":
     
     tab_num, tab_sim, tab_aut = st.tabs(["Numérica (Telemetría)", "Simbólica (Sistema Experto)", "Autómatas (Logs en Cascada)"])
     
+    # 1. Representación Numérica
     with tab_num:
         st.subheader("Representación Numérica: Distancia Euclidiana (Triaje de Tickets)")
         st.markdown("Mide qué tan cerca está el estado actual del servidor de un perfil crítico de colapso, usando vectores numéricos y distancias en el espacio.")
         
-        perfil_colapso = np.array([10.0, 10.0, 1.0])
+        perfil_colapso = np.array([10.0, 10.0, 1.0]) # [Impacto Infraestructura, Urgencia Tiempo, Sentimiento NLP]
+        
         col_sliders, col_results = st.columns([1, 1])
         with col_sliders:
             st.markdown("**Ajusta las características del ticket entrante:**")
@@ -625,15 +631,23 @@ elif menu == "Representaciones del Reconocimiento":
         with col_results:
             ticket_actual = np.array([imp_val, urg_val, nlp_val])
             distancia = np.linalg.norm(ticket_actual - perfil_colapso)
+            
+            st.markdown(f"**Perfil Crítico (Fijo):** `[{perfil_colapso[0]}, {perfil_colapso[1]}, {perfil_colapso[2]}]`")
+            st.markdown(f"**Ticket Actual (Dinámico):** `[{ticket_actual[0]}, {ticket_actual[1]}, {ticket_actual[2]}]`")
+            
             st.metric(label="Distancia Numérica al Escalamiento Inmediato", value=f"{distancia:.2f}")
+            
             if distancia < 3.0:
                 st.error("**ALERTA DE TRIAJE:** Clasificación prioritaria. Asignando directamente a Especialista Humano.")
             else:
                 st.success("**ESTABLE:** Ticket estándar manejable por chatbot de Nivel 1.")
                 
+    # 2. Representación Simbólica
     with tab_sim:
         st.subheader("Representación Simbólica: Inferencia Discreta (Hechos y Reglas)")
         st.markdown("Transforma el lenguaje natural en hechos discretos. Utiliza lógica `SI -> ENTONCES` para llegar a un diagnóstico absoluto y justificable.")
+        
+        st.markdown("**Selecciona los síntomas detectados en el ticket:**")
         
         c1, c2, c3 = st.columns(3)
         with c1:
@@ -654,125 +668,340 @@ elif menu == "Representaciones del Reconocimiento":
         if sym_pwd: hechos_detectados.add("olvido_contrasena")
         if sym_ad: hechos_detectados.add("active_directory")
         
+        st.markdown(f"**Base de Hechos Actual:** `{hechos_detectados}`")
+        
+        st.markdown("---")
+        st.markdown("#### Motor de Inferencia")
         if {"pantalla_azul", "reinicio_constante"}.issubset(hechos_detectados):
             st.error("**Diagnóstico Simbólico:** `falla_hardware_fisico` detectada.")
+            st.markdown("**Acción recomendada:** Desviar al módulo de Soporte de Campo (Presencial) y solicitar modelo del equipo.")
         elif {"ping_fallido", "servidor_no_responde"}.issubset(hechos_detectados):
             st.error("**Diagnóstico Simbólico:** `caida_infraestructura_red` detectada.")
+            st.markdown("**Acción recomendada:** Notificar a NOC y ejecutar protocolo de ping persistente.")
+        elif {"olvido_contrasena", "active_directory"}.issubset(hechos_detectados):
+            st.warning("**Diagnóstico Simbólico:** `restablecimiento_credenciales`.")
+            st.markdown("**Acción recomendada:** Ejecutar script de automatización de reseteo (Nivel 1 - Bot).")
         else:
-            st.info("**Diagnóstico Simbólico:** Incidentes estándar registrados.")
+            st.info("**Diagnóstico Simbólico:** Incidentes sin mapeo directo crítico.")
 
+    # 3. Representación por Autómata
     with tab_aut:
         st.subheader("Representación por Autómata: Validación de Cronologías")
+        st.markdown("Utiliza un Autómata Finito Determinista (AFD) para auditar secuencias de tiempo. Valida si una sucesión de eventos (`O`: Operativo, `E`: Error, `T`: Timeout) desencadena el patrón estricto de una *falla en cascada* (`ET`).")
+        
+        st.markdown("**Alfabeto permitido:** `O` (Operativo), `E` (Error), `T` (Timeout)")
         secuencia = st.text_input("Ingresa una secuencia de logs temporales:", "OOOEET").upper()
+        
         if st.button("Auditar Secuencia con AFD"):
             secuencia_limpia = "".join(c for c in secuencia if c in ['O', 'E', 'T'])
-            aceptada, mensaje = acepta_patron_falla_cascada(secuencia_limpia)
-            if aceptada:
-                st.error("**Secuencia Aceptada.** Falla en cascada confirmada `[Error -> Timeout]`.")
+            
+            if len(secuencia_limpia) != len(secuencia):
+                st.error(f"La secuencia contiene caracteres no válidos. Procesando solo la parte válida: `{secuencia_limpia}`")
+            
+            if not secuencia_limpia:
+                st.warning("Ingresa una secuencia válida (ej. 'OOET').")
             else:
-                st.success("**Secuencia Rechazada.** El sistema se estabilizó.")
+                aceptada, mensaje = acepta_patron_falla_cascada(secuencia_limpia)
+                
+                st.markdown(f"#### Resultados de Auditoría para: `{secuencia_limpia}`")
+                
+                estado_visual = "q0"
+                pasos = [f"Inicio (q0)"]
+                
+                transitions_vis = {
+                    ("q0", "O"): "q0", ("q0", "T"): "q0", ("q0", "E"): "q1",
+                    ("q1", "O"): "q0", ("q1", "E"): "q1", ("q1", "T"): "q2",
+                    ("q2", "O"): "q0", ("q2", "T"): "q0", ("q2", "E"): "q1",
+                }
+                
+                for sim in secuencia_limpia:
+                    if (estado_visual, sim) in transitions_vis:
+                        estado_visual = transitions_vis[(estado_visual, sim)]
+                        pasos.append(f"Leer '{sim}' ➔ {estado_visual}")
+                    else:
+                        pasos.append(f"Transición Inválida para '{sim}'")
+                        estado_visual = "Error"
+                        break
+                
+                st.code(" -> ".join(pasos), language="text")
+                
+                if aceptada:
+                    st.error("**Secuencia Aceptada.** El AFD confirma que el patrón estricto `[Error -> Timeout]` se cumple. Falla en cascada confirmada.")
+                else:
+                    st.success("**Secuencia Rechazada.** El sistema se estabilizó al final o la secuencia no terminó en Timeout.")
 
 # --- 6. Red Neuronal, Imagen Base64 & Ontología (Semana 08) ---
 elif menu == "Red Neuronal & Ontología":
     encabezado("Red Neuronal, Imágenes Base64 y Ontología (Semana 08)", "Integración completa: Modelo MLP (Predicción) + Carga y Descripción de Imagen Base64 ➔ SQLite (Evidencia) ➔ Ontología GraphML (Significado).")
     
-    tab_nn, tab_img, tab_db, tab_onto = st.tabs(["Clasificador MLP", "Análisis de Imagen (Base64)", "Base de Evidencia (SQLite)", "Ontología del Dominio"])
+    tab_nn, tab_img, tab_db, tab_onto = st.tabs([
+        "Clasificador MLP", 
+        "Análisis de Imagen (Base64)", 
+        "Base de Evidencia (SQLite)", 
+        "Ontología del Dominio"
+    ])
     
     with tab_nn:
         st.subheader("Clasificador de Tickets por Red Neuronal Artificial")
-        f1 = st.slider("Impacto App (0-10)", 0.0, 10.0, 5.0)
-        f2 = st.slider("Urgencia (0-10)", 0.0, 10.0, 5.0)
-        f3 = st.slider("Temperatura Servidor", 0.0, 10.0, 4.0)
-        f4 = st.slider("Fallos de Red", 0.0, 10.0, 3.0)
+        st.markdown("Introduce las métricas de telemetría del incidente para que la MLP prediga la categoría de soporte.")
+        
+        c1, c2, c3, c4 = st.columns(4)
+        with c1: f1 = st.slider("Impacto App (0-10)", 0.0, 10.0, 5.0)
+        with c2: f2 = st.slider("Urgencia (0-10)", 0.0, 10.0, 5.0)
+        with c3: f3 = st.slider("Temperatura Servidor", 0.0, 10.0, 4.0)
+        with c4: f4 = st.slider("Fallos de Red", 0.0, 10.0, 3.0)
         
         if st.button("Ejecutar Predicción Neuronal"):
-            modelo_path = BASE_DIR / "artifacts" / "mejor_modelo.pkl"
-            if not modelo_path.exists():
-                modelo_path = BASE_DIR / "artifacts" / "modelo_mlp.pkl"
+            modelo_path = BASE_DIR / "artifacts" / "modelo_mlp.pkl"
             if modelo_path.exists():
                 with open(modelo_path, "rb") as f:
                     clf = pickle.load(f)
-                prediccion = clf.predict(np.array([[f1, f2, f3, f4]]))[0] if hasattr(clf, "predict") else "Modelo cargado con éxito"
-                st.success(f"Modelo cargado y listo para inferencia. Resultado simulado: Clase ID {prediccion}")
+                entrada = np.array([[f1, f2, f3, f4]])
+                prediccion = clf.predict(entrada)[0]
+                mapa_clases = {0: "Hardware", 1: "Red", 2: "Software", 3: "Seguridad"}
+                st.success(f"Categoría Predicha por el Modelo: **{mapa_clases.get(prediccion, 'Desconocida')}** (Clase ID: {prediccion})")
             else:
-                st.warning("Ejecuta `python src/semana11_benchmark.py` para generar el modelo entrenado.")
+                st.warning("Primero debes ejecutar `python src/main.py` para generar el modelo entrenado.")
                 
     with tab_img:
-        st.subheader("Reconocimiento de Imágenes y Base64")
-        uploaded_file = st.file_uploader("Sube una imagen de diagnóstico", type=["png", "jpg", "jpeg"])
-        desc_usuario = st.text_input("Añade una descripción textual:", "Pantalla azul en equipo corporativo.")
+        st.subheader("Reconocimiento de Imágenes, Base64 y Metadatos (Soporte TI)")
+        st.markdown("Adjunta una captura de pantalla de error técnico e ingresa una descripción textual para que el agente la codifique, analice e integre en el flujo de evidencia.")
+        
+        uploaded_file = st.file_uploader("Sube una imagen de diagnóstico de soporte", type=["png", "jpg", "jpeg"])
+        desc_usuario = st.text_input("Añade una descripción textual o sintomatología observada:", "Pantalla azul intermitente con volcado de memoria en equipo contable.")
+        
         if uploaded_file is not None:
-            image_obj = Image.open(uploaded_file)
-            st.image(image_obj, caption=uploaded_file.name, width=350)
-            if st.button("Procesar Imagen en Pipeline"):
-                st.success("Imagen procesada y persistida correctamente.")
+            image = Image.open(uploaded_file)
+            st.image(image, caption=f"Archivo cargado: {uploaded_file.name}", width=350)
+            
+            bytes_data = uploaded_file.getvalue()
+            base64_str = base64.b64encode(bytes_data).decode("utf-8")
+            
+            with st.expander("Ver cadena Base64 generada"):
+                st.code(base64_str[:250] + "...", language="text")
+                
+            if st.button("Procesar Imagen, Base64 y Descripción en el Pipeline"):
+                try:
+                    from classifiers.reconocimiento import ejecutar_semana_08
+                    ejecutar_semana_08(imagen_bytes=bytes_data, nombre_archivo=uploaded_file.name, descripcion_texto=desc_usuario)
+                    
+                    nombre_l = uploaded_file.name.lower()
+                    if "red" in nombre_l or "router" in nombre_l:
+                        diag_resultado = "Red / Conectividad (Clase 1)"
+                    elif "azul" in nombre_l or "hardware" in nombre_l:
+                        diag_resultado = "Hardware / Pantalla Azul (Clase 0)"
+                    else:
+                        diag_resultado = "Software / Aplicación (Clase 2)"
+                        
+                    st.success(f"**Agente IA - Imagen Reconocida y Descrita:** {diag_resultado}")
+                    st.info("**Estado en Proyecto:** La imagen se codificó en Base64, se asoció a su descripción textual, se clasificó con enfoque de soporte TI, se persistió en SQLite y se enlazó en la ontología GraphML.")
+                except Exception as e:
+                    st.error(f"Error al procesar la imagen en el pipeline: {e}")
 
     with tab_db:
-        st.subheader("Registro de Evidencia (SQLite)")
+        st.subheader("Registro de Evidencia Verificable (SQLite)")
+        st.markdown("Consulta los registros almacenados en `artifacts/soporte_evidencia.db` (incluyendo metadatos de imágenes Base64 y descripciones textualmente auditadas).")
         db_p = BASE_DIR / "artifacts" / "soporte_evidencia.db"
         if db_p.exists():
             with sqlite3.connect(db_p) as conn:
-                st.dataframe(pd.read_sql("SELECT * FROM evidencia_tickets ORDER BY id DESC LIMIT 15", conn), use_container_width=True)
+                df_ev = pd.read_sql("SELECT * FROM evidencia_tickets ORDER BY id DESC LIMIT 15", conn)
+            st.dataframe(df_ev, use_container_width=True)
         else:
-            st.warning("Base de datos no encontrada.")
+            st.warning("Base de datos no encontrada. Ejecuta el script del proyecto.")
             
     with tab_onto:
-        st.subheader("Ontología GraphML")
+        st.subheader("Representación del Conocimiento (Ontología GraphML)")
+        st.markdown("Relaciones lógicas que otorgan significado a las predicciones y canales visuales dentro del dominio del Asistente de Soporte TI.")
         onto_p = BASE_DIR / "artifacts" / "ontologia.graphml"
         if onto_p.exists():
             G_load = nx.read_graphml(onto_p)
-            st.info(f"Grafo cargado con {G_load.number_of_nodes()} conceptos.")
+            st.info(f"Grafo cargado correctamente con {G_load.number_of_nodes()} conceptos y {G_load.number_of_edges()} relaciones semánticas.")
+            edges_list = [(u, v, data.get('rel', 'relación')) for u, v, data in G_load.edges(data=True)]
+            st.table(pd.DataFrame(edges_list, columns=["Sujeto", "Objeto", "Relación Semántica"]))
         else:
-            st.warning("Ontología no encontrada.")
-
+            st.warning("Archivo GraphML no encontrado en artifacts/.")
+            
 # --- 7. Visión Artificial (Semana 09) ---
 elif menu == "Visión Artificial (Semana 09)":
-    encabezado("Visión Artificial y Procesamiento de Imágenes", "Transformación de evidencia visual en información numérica mediante extracción de características, Canny y Otsu.")
-    opciones_imagenes = {"Disco Duro Dañado": "disco_duro.png", "Pantalla Azul": "pantalla_azul.png", "Router sin Conexión": "router.png"}
-    archivo_imagen = opciones_imagenes[st.selectbox("Seleccionar caso de estudio:", list(opciones_imagenes.keys()))]
+    encabezado("Visión Artificial y Procesamiento de Imágenes", "Transformación de evidencia visual en información numérica mediante extracción de características, detección de contornos (Canny) y segmentación por umbrales (Otsu).")
+
+    st.subheader("Analizar Evidencia desde la Base de Conocimiento")
     
-    if st.button("Procesar Imagen Seleccionada"):
+    opciones_imagenes = {
+        "Falla 1: Disco Duro Dañado (Sectores defectuosos)": "disco_duro.png",
+        "Falla 2: Pantalla Azul (Volcado de memoria)": "pantalla_azul.png",
+        "Falla 3: Router sin conexión (Luces apagadas)": "router.png"
+    }
+    
+    imagen_seleccionada = st.selectbox("Selecciona un caso de estudio predefinido para procesar:", list(opciones_imagenes.keys()), key="select_vis_09")
+    archivo_imagen = opciones_imagenes[imagen_seleccionada]
+
+    if st.button("Procesar Imagen Seleccionada", key="btn_vis_09"):
         if MODULOS_CARGADOS:
-            ejecutar_vision_soporte(nombre_imagen=archivo_imagen)
-            st.success("Procesamiento completado.")
+            with st.spinner(f"Procesando bordes, umbrales y regiones de {archivo_imagen}..."):
+                try:
+                    umbral, regiones = ejecutar_vision_soporte(nombre_imagen=archivo_imagen)
+                    
+                    if umbral is not None:
+                        st.session_state['otsu_thresh'] = umbral
+                        st.session_state['otsu_regs'] = regiones
+                        st.success(f"¡Pipeline ejecutado! Imagen '{archivo_imagen}' procesada correctamente.")
+                    else:
+                        st.error(f"No se encontró la imagen '{archivo_imagen}' en la carpeta 'data/'. ¡Asegúrate de guardarla allí primero!")
+                except Exception as e:
+                    st.error(f"Error en el procesamiento: {e}")
         else:
-            st.error("Módulos no cargados.")
+            st.error("Los módulos no se cargaron correctamente. Verifica las importaciones.")
+
+    img_path = Path("artifacts/semana09_vision.png")
+    if img_path.exists():
+        st.image(str(img_path), caption="Pipeline de Visión: Imagen Original ➔ Bordes (Canny) ➔ Máscara Binaria (Otsu)", use_container_width=True)
+        
+        if 'otsu_thresh' in st.session_state and 'otsu_regs' in st.session_state:
+            st.markdown("### Resultados del Procesamiento Numérico")
+            col1, col2 = st.columns(2)
+            col1.metric("Umbral Otsu (Corte de Intensidad)", f"{st.session_state['otsu_thresh']:.4f}")
+            col2.metric("Regiones Conectadas Detectadas", st.session_state['otsu_regs'])
+            st.markdown("---")
             
-    img_path_s9 = Path("artifacts/semana09_vision.png")
-    if img_path_s9.exists():
-        st.image(str(img_path_s9), use_container_width=True)
+        st.info("""
+        **Análisis Técnico del Procesamiento:**
+        * **Contornos (Canny):** Identifica los cambios bruscos de intensidad en los píxeles, marcando los límites físicos y estructurales del hardware defectuoso para aislar su forma.
+        * **Umbral Automático (Otsu):** Calcula matemáticamente el punto óptimo en el histograma de la imagen para separar los píxeles en dos clases (claro/oscuro), generando una máscara binaria.
+        * **Regiones Conectadas:** La máscara permite al sistema contar grupos de píxeles unidos, lo cual es el primer paso para aislar piezas o zonas afectadas antes de pasarlas a una red neuronal convolucional.
+        """)
+    else:
+        st.warning("No se ha generado la evidencia visual. Selecciona una imagen y procesa el pipeline.")
 
 # --- 8. Histogramas y Texturas LBP (Semana 10) ---
 elif menu == "Histogramas y Texturas LBP (Semana 10)":
-    encabezado("Comparativa de Dispositivos y Texturas LBP", "Evaluación morfológica entre componentes sanos y averiados.")
-    categorias_hardware = {
-        "Disco Duro": {"bueno": "disco_duro_bueno.jpg", "malos": {"Golpe Físico": "disco_duro_dañado_por_golpe.jpg"}},
-        "Router / Red": {"bueno": "router_bueno.jpg", "malos": {"Intermitencia": "router_falla_conexion_intermitente.jpg"}}
-    }
-    cat_sel = st.selectbox("Categoría:", list(categorias_hardware.keys()))
-    fallo_sel = st.selectbox("Avería:", list(categorias_hardware[cat_sel]["malos"].keys()))
-    
-    if st.button("Ejecutar Análisis Comparativo"):
-        if MODULOS_CARGADOS:
-            import matplotlib.pyplot as plt
-            img_a, _, hist_int_a, hist_lbp_a, feat_a = procesar_imagen_proyecto(categorias_hardware[cat_sel]["bueno"])
-            img_b, _, hist_int_b, hist_lbp_b, feat_b = procesar_imagen_proyecto(categorias_hardware[cat_sel]["malos"][fallo_sel])
-            
-            fig, axes = plt.subplots(2, 2, figsize=(10, 8))
-            axes[0, 0].imshow(img_a, cmap='gray'); axes[0, 0].axis('off')
-            axes[0, 1].imshow(img_b, cmap='gray'); axes[0, 1].axis('off')
-            axes[1, 0].plot(hist_int_a); axes[1, 0].plot(hist_lbp_a)
-            axes[1, 1].plot(hist_int_b); axes[1, 1].plot(hist_lbp_b)
-            plt.tight_layout()
-            plt.savefig(BASE_DIR / "artifacts" / "semana10_comparativa.png")
-            plt.close()
-            st.session_state['s10_feat_bueno'] = feat_a
-            st.session_state['s10_feat_malo'] = feat_b
-            st.success("Análisis completado.")
+    encabezado("Comparativa de Dispositivos (Bueno vs. Malo) y Análisis de Texturas LBP", "Evaluación morfológica y comparación lado a lado entre componentes en estado óptimo y componentes con fallos específicos.")
 
-    comp_path_s10 = Path("artifacts/semana10_comparativa.png")
-    if comp_path_s10.exists():
-        st.image(str(comp_path_s10), use_container_width=True)
+    categorias_hardware = {
+        "Disco Duro": {
+            "bueno": "disco_duro_bueno.jpg",
+            "malos": {
+                "Daño por Golpe Físico": "disco_duro_dañado_por_golpe.jpg",
+                "Rayones en Superficie Magnética": "disco_duro_dañado_por_rayones.jpg",
+                "No Gira (Falla en Motor Spindle)": "disco_duro_no_gira.jpg"
+            }
+        },
+        "Router / Red": {
+            "bueno": "router_bueno.jpg",
+            "malos": {
+                "Falla de Conexión Intermitente": "router_falla_conexion_intermitente.jpg"
+            }
+        },
+        "Pantalla / Display": {
+            "bueno": "panatalla_inicio_bueno.jpg",
+            "malos": {
+                "Daño Físico por Golpe en Display": "pantalla_dañada_por_golpe.jpg",
+                "Fallo de Encendido (No Arranca / Sin Video)": "pantalla_no_arranca.jpg"
+            }
+        }
+    }
+
+    col_cat1, col_cat2 = st.columns(2)
+    with col_cat1:
+        categoria_sel = st.selectbox("Seleccionar Categoría de Producto:", list(categorias_hardware.keys()), key="s10_cat")
+    
+    prod_info = categorias_hardware[categoria_sel]
+    img_buena_nombre = prod_info["bueno"]
+
+    with col_cat2:
+        fallo_sel = st.selectbox(f"Seleccionar Tipo de Avería ({categoria_sel}):", list(prod_info["malos"].keys()), key="s10_fallo")
+    
+    img_mala_nombre = prod_info["malos"][fallo_sel]
+
+    st.markdown("---")
+
+    if st.button("Ejecutar Análisis Comparativo (Bueno vs. Malo)"):
+        if MODULOS_CARGADOS:
+            with st.spinner("Procesando características, histogramas y texturas LBP para ambos estados..."):
+                try:
+                    import matplotlib.pyplot as plt
+                    
+                    img_a, mask_a, hist_int_a, hist_lbp_a, feat_a = procesar_imagen_proyecto(img_buena_nombre)
+                    img_b, mask_b, hist_int_b, hist_lbp_b, feat_b = procesar_imagen_proyecto(img_mala_nombre)
+
+                    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+                    
+                    axes[0, 0].imshow(img_a, cmap='gray')
+                    axes[0, 0].set_title(f"Óptimo: {img_buena_nombre}")
+                    axes[0, 0].axis('off')
+                    
+                    axes[0, 1].imshow(img_b, cmap='gray')
+                    axes[0, 1].set_title(f"Averiado: {img_mala_nombre}")
+                    axes[0, 1].axis('off')
+                    
+                    axes[1, 0].plot(hist_int_a, label="Intensidad (Sano)", color='blue')
+                    axes[1, 0].plot(hist_lbp_a, label="LBP Textura (Sano)", color='orange')
+                    axes[1, 0].set_title(f"Histogramas - {img_buena_nombre}")
+                    axes[1, 0].legend(loc="upper right")
+                    
+                    axes[1, 1].plot(hist_int_b, label="Intensidad (Averiado)", color='green')
+                    axes[1, 1].plot(hist_lbp_b, label="LBP Textura (Averiado)", color='red')
+                    axes[1, 1].set_title(f"Histogramas - {img_mala_nombre}")
+                    axes[1, 1].legend(loc="upper right")
+                    
+                    plt.tight_layout()
+                    artifact_path = BASE_DIR / "artifacts" / "semana10_comparativa.png"
+                    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+                    plt.savefig(artifact_path)
+                    plt.close()
+
+                    st.session_state['s10_feat_bueno'] = feat_a
+                    st.session_state['s10_feat_malo'] = feat_b
+                    st.session_state['s10_nombres'] = (img_buena_nombre, img_mala_nombre)
+                    st.session_state['s10_fallo_desc'] = fallo_sel
+
+                    st.success("¡Análisis comparativo de la Semana 10 completado con éxito!")
+                except Exception as e:
+                    st.error(f"Error al procesar las imágenes: {e}")
+        else:
+            st.error("Módulos no cargados correctamente.")
+
+    comp_path = Path("artifacts/semana10_comparativa.png")
+    if comp_path.exists():
+        st.markdown("### Visualización Lado a lado (Imágenes e Histogramas Analíticos)")
+        st.image(str(comp_path), use_container_width=True)
+
+    if 's10_feat_bueno' in st.session_state:
+        f_bno = st.session_state['s10_feat_bueno']
+        f_mlo = st.session_state['s10_feat_malo']
+        n_bno, n_mlo = st.session_state['s10_nombres']
+        desc_fallo = st.session_state['s10_fallo_desc']
+
+        st.markdown("### Especificación Técnica del Diagnóstico y Fallos")
+        st.error(f"**Avería Detectada:** {desc_fallo} (`{n_mlo}`)")
+        
+        if "golpe" in n_mlo:
+            st.markdown("- **Análisis de Fallo:** Disrupción estructural por impacto cinético. Las regiones conectadas aumentan debido a las fracturas y astillas, alterando drásticamente el patrón regular de la referencia sana (`{n_bno}`).")
+        elif "rayones" in n_mlo:
+            st.markdown("- **Análisis de Fallo:** Abrasión profunda en la superficie magnética. Se observa una desviación notoria en los descriptores de textura LBP respecto al componente óptimo.")
+        elif "no_gira" in n_mlo:
+            st.markdown("- **Análisis de Fallo:** Traba mecánica en el motor o bloqueo de eje. El histograma carece de variabilidad dinámica al encontrarse el componente detenido.")
+        elif "intermitente" in n_mlo:
+            st.markdown("- **Análisis de Fallo:** Degeneración en la pasarela de red y pérdida de estabilidad de enlace inalámbrico.")
+        else:
+            st.markdown("- **Análisis de Fallo:** Anomalía crítica en circuitos de video o alimentación, rompiendo la simetría morfológica del estado base.")
+
+        st.markdown("---")
+        st.markdown("### Comparativa Numérica de Vectores de Características (.npy)")
+        
+        col_m1, col_m2 = st.columns(2)
+        with col_m1:
+            st.markdown(f"**Referencia Sana: `{n_bno}`**")
+            st.metric("Área Media de Regiones", f"{f_bno[0]:.2f} px")
+            st.metric("Desviación Estándar", f"{f_bno[1]:.2f}")
+            st.metric("Regiones Validadas", int(f_bno[2]))
+        with col_m2:
+            st.markdown(f"**Componente Averiado: `{n_mlo}`**")
+            st.metric("Área Media de Regiones", f"{f_mlo[0]:.2f} px", delta=f"{f_mlo[0]-f_bno[0]:.2f} px", delta_color="inverse")
+            st.metric("Desviación Estándar", f"{f_mlo[1]:.2f}", delta=f"{f_mlo[1]-f_bno[1]:.2f}", delta_color="off")
+            st.metric("Regiones Validadas", int(f_mlo[2]), delta=f"{int(f_mlo[2]-f_bno[2])}", delta_color="inverse")
+    else:
+        st.warning("Selecciona una categoría y un tipo de avería, luego haz clic en 'Ejecutar Análisis Comparativo (Bueno vs. Malo)'.")
 
 # --- 9. Benchmark y Decisiones de Modelos (Semana 11) ---
 elif menu == "Benchmark y Decisiones de Modelos (Semana 11)":
@@ -844,7 +1073,75 @@ elif menu == "Benchmark y Decisiones de Modelos (Semana 11)":
             st.info("Ejecuta `python src/semana11_benchmark.py` para generar el informe ADR automáticamente.")
     else:
         st.warning("No se encontró el archivo de benchmark. Ejecuta `python src/semana11_benchmark.py` para generarlo.")
-# --- 10. Portal de Usuario ---
+
+# --- 10. Motor de Inferencia Avanzado (Semana 13) ---
+elif menu == "Motor de Inferencia (Semana 13)":
+    encabezado("Ingeniería del Conocimiento: Motor de Inferencia Lógica (Semana 13)", "Evaluación de reglas Horn por encadenamiento hacia adelante con trazabilidad y explicabilidad paso a paso para el Asistente de Soporte TI.")
+    
+    st.markdown("### 📋 Catálogo Extendido de Reglas del Sistema")
+    st.markdown("""
+    - **R1:** $\\text{imagen\\_procesada\\_ok} \\land \\text{textura\\_anomala\\_detectada} \\longrightarrow \\text{diagnostico\\_hardware\\_fallido}$
+    - **R2:** $\\text{diagnostico\\_hardware\\_fallido} \\land \\text{hardware\\_critico} \\longrightarrow \\text{escalamiento\\_nivel\\_2}$
+    - **R3:** $\\text{escalamiento\\_nivel\\_2} \\land \\text{sla\\_excedido} \\longrightarrow \\text{prioridad\\_critica\\_urgente}$
+    - **R4:** $\\text{conexion\\_intermitente} \\land \\text{alta\\_latencia} \\longrightarrow \\text{falla\\_enlace\\_wan}$
+    - **R5:** $\\text{falla\\_enlace\\_wan} \\land \\text{impacto\\_critico} \\longrightarrow \\text{escalamiento\\_redes\\_nivel\\_3}$
+    """)
+    
+    st.markdown("---")
+    st.subheader("Simulador Interactivo de Escenarios y Explicabilidad")
+    
+    col_esc1, col_esc2 = st.columns(2)
+    with col_esc1:
+        st.markdown("**Selecciona las evidencias de Hardware / Tickets:**")
+        hecho_1 = st.checkbox("imagen_procesada_ok", value=True)
+        hecho_2 = st.checkbox("textura_anomala_detectada", value=True)
+        hecho_3 = st.checkbox("hardware_critico", value=True)
+        hecho_4 = st.checkbox("sla_excedido", value=True)
+    with col_esc2:
+        st.markdown("**Selecciona las evidencias de Red / WAN:**")
+        hecho_5 = st.checkbox("conexion_intermitente", value=False)
+        hecho_6 = st.checkbox("alta_latencia", value=False)
+        hecho_7 = st.checkbox("impacto_critico", value=False)
+        
+    hechos_usuario = set()
+    if hecho_1: hechos_usuario.add("imagen_procesada_ok")
+    if hecho_2: hechos_usuario.add("textura_anomala_detectada")
+    if hecho_3: hechos_usuario.add("hardware_critico")
+    if hecho_4: hechos_usuario.add("sla_excedido")
+    if hecho_5: hechos_usuario.add("conexion_intermitente")
+    if hecho_6: hechos_usuario.add("alta_latencia")
+    if hecho_7: hechos_usuario.add("impacto_critico")
+    
+    if st.button("Ejecutar Motor de Inferencia con Explicabilidad"):
+        if MODULOS_CARGADOS:
+            hechos_finales, trazas, explicaciones = inferir_con_explicacion(hechos_usuario, REGLAS_SOPORTE_TI)
+            
+            st.markdown("---")
+            col_r1, col_r2 = st.columns(2)
+            with col_r1:
+                st.markdown("#### Hechos Deducidos (Base Ampliada)")
+                st.info(list(hechos_finales))
+            with col_r2:
+                st.markdown("#### Traza de Reglas Activadas")
+                st.success(trazas if trazas else "Ninguna regla activada.")
+                
+            st.markdown("#### 🔍 Explicabilidad Paso a Paso (Modus Ponens)")
+            if explicaciones:
+                for exp in explicaciones:
+                    st.markdown(f"- {exp}")
+            else:
+                st.warning("No se disparó ninguna regla con las premisas proporcionadas.")
+                
+            if "prioridad_critica_urgente" in hechos_finales:
+                st.error("**Conclusión Demostrada:** `prioridad_critica_urgente` alcanzada con éxito.")
+            elif "escalamiento_redes_nivel_3" in hechos_finales:
+                st.error("**Conclusión Demostrada:** `escalamiento_redes_nivel_3` alcanzada con éxito.")
+            else:
+                st.warning("**Conclusión No Demostrada:** Faltan premisas intermedias para llegar a la conclusión final (esto no significa que sea falsa, sino insuficiente en evidencia).")
+        else:
+            st.error("Módulos no disponibles.")
+
+# --- 11. Portal de Usuario ---
 elif menu == "Portal de Usuario":
     encabezado("Portal / Cliente Final", "Interfaz orientada al usuario final para la creación de solicitudes de soporte.")
     usuario_nombre = st.text_input("Nombre:", "Carlos Pérez")
@@ -852,14 +1149,14 @@ elif menu == "Portal de Usuario":
     if st.button("Enviar Solicitud"):
         st.success(f"¡Ticket registrado con éxito para {usuario_nombre}!")
 
-# --- 11. Base de Conocimiento (KB) ---
+# --- 12. Base de Conocimiento (KB) ---
 elif menu == "Base de Conocimiento (KB)":
     encabezado("Base de Conocimiento Técnica (KB)", "Catálogo de los 30 procedimientos operativos estandarizados.")
     for proc in cargar_base_conocimiento()[:10]:
         with st.expander(f"#{proc['id']} - {proc['titulo']} [{proc['categoria']}]"):
             st.markdown(f"**Solución:** {proc['solucion']}")
 
-# --- 12. Trazas de Auditoría ---
+# --- 13. Trazas de Auditoría ---
 elif menu == "Trazas de Auditoría":
     encabezado("Registro de Auditoría del Sistema (audit.log)", "Monitoreo de eventos generados por el orquestador.")
     registros, raw_text = parsear_audit_log()

@@ -6,6 +6,15 @@ Sistema inteligente de soporte técnico diseñado para automatizar la clasificac
 ##  Arquitectura del Sistema
 
 El proyecto combina un enfoque modular y híbrido adaptado a las necesidades de soporte de software de PC corporativo:
+* **Semana 13. Ingeniería del Conocimiento y Motor de Inferencia Lógica**
+
+-   **Motor de Reglas (Horn):** Implementación de reglas de Horn basadas en proposiciones y conjunciones para deducir diagnósticos avanzados, escalamientos y prioridades críticas.
+    
+-   **Encadenamiento hacia Adelante:** Algoritmo de inferencia automatizada que amplía la base de hechos iniciales registrando trazas de ejecución paso a paso.
+    
+-   **Explicabilidad Paso a Paso:** Generación de explicaciones formales aplicando _Modus Ponens_ para cada regla disparada, facilitando la sustentación interactiva y el diagnóstico en el dashboard.
+    
+-   **Pruebas Funcionales (`unittest`):** Verificación de casos demostrados (Caso A), casos no demostrados (Caso B), conservación de hechos iniciales y prevención de bucles en dependencias circulares.
 - **Semana 11. Benchmark de Modelos y Toma de Decisiones Técnicas**
 * **Evaluación Comparativa:** Ejecución de benchmark automatizado entre tres modelos de aprendizaje automático (**Logistic Regression**, **Random Forest** y **MLPClassifier**) bajo el mismo protocolo de partición de datos (`train_test_split` con semilla fija y estratificación).
 * **Evidencia Persistente:** Generación y almacenamiento automático de las métricas de precisión (*accuracy*) y tiempo de entrenamiento (`fit_seconds`) en `artifacts/benchmark.csv`.
