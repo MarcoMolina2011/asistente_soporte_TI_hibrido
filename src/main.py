@@ -1,4 +1,3 @@
-# src/main.py
 from audit.logger_audit import registrar_traza
 from rules.prioritizer import calcular_prioridad
 from classifiers.taxonomia import classify_problem
@@ -12,6 +11,7 @@ from classifiers.vision import ejecutar_vision_soporte
 from classifiers.texturas import procesar_imagen_proyecto, FALLOS_DESCRIPCION
 from classifiers.benchmark import ejecutar_benchmark_semana11
 from classifiers.motor_inferencia import inferir_con_explicacion, REGLAS_SOPORTE_TI
+from classifiers.red_semantica import RedSemanticaSoporteTI 
 
 def main():
     # === SECCIÓN 1: Validación del Modelo Base ===
@@ -129,20 +129,41 @@ def main():
 
     print("==================================================")
 
-    # === SECCIÓN 11: Motor de Inferencia Lógica Avanzado (Semana 13) ===
-    print("=== 11. INGENIERÍA DEL CONOCIMIENTO Y MOTOR DE INFERENCIA (SEMANA 13) ===")
+    # === SECCIÓN 11: Motor de Inferencia Lógica Avanzado (10 Reglas - Semana 13) ===
+    print("=== 11. INGENIERÍA DEL CONOCIMIENTO Y MOTOR DE INFERENCIA (10 REGLAS) ===")
     hechos_iniciales_demo = {"imagen_procesada_ok", "textura_anomala_detectada", "hardware_critico", "sla_excedido"}
     hechos_finales, traza_reglas, explicaciones_demo = inferir_con_explicacion(hechos_iniciales_demo, REGLAS_SOPORTE_TI)
     print(f"Hechos iniciales: {hechos_iniciales_demo}")
     print(f"Hechos deducidos (Finales): {hechos_finales}")
+    print(f"Catálogo activo: {len(REGLAS_SOPORTE_TI)} reglas de Horn")
     print(f"Traza de reglas ejecutadas: {traza_reglas}")
     print("Explicaciones paso a paso:")
     for exp in explicaciones_demo:
         print(f" -> {exp}")
-    registrar_traza(ticket_id, "SEMANA_13_INFERENCIA", f"Motor de inferencia ejecutado con éxito. Trazas: {traza_reglas}")
+    registrar_traza(ticket_id, "SEMANA_13_INFERENCIA", f"Motor de inferencia con 10 reglas ejecutado con éxito. Trazas: {traza_reglas}")
 
     print("==================================================")
-    print("¡PIPELINE COMPLETO DE LA SEMANA 02 A LA SEMANA 13 EJECUTADO EXITOSAMENTE!")
+
+    # === SECCIÓN 12: Redes Semánticas e Inferencia por Jerarquía (Semana 14) ===
+    print("=== 12. REDES SEMÁNTICAS E INFERENCIA POR JERARQUÍA (SEMANA 14) ===")
+    red = RedSemanticaSoporteTI()
+
+    oraciones_demo = [
+        "servidor_bd es un hardware_critico",
+        "hardware_critico es un activo_corporativo",
+        "activo_corporativo requiere alimentacion_redundante",
+        "estacion_trabajo es un hardware_estandar",
+        "sobrecalentamiento se resuelve con limpieza_ventilacion"
+    ]
+    for oracion in oraciones_demo:
+        red.interpretar_oracion(oracion)
+    print(f"  Red construida: {red.resumen()}")
+
+    es_activo = red.es_un("servidor_bd", "activo_corporativo")
+    registrar_traza(ticket_id, "SEMANA_14_RED_SEMANTICA", f"Red semántica ({red.resumen()}); inferencia es_un servidor_bd -> activo_corporativo = {es_activo}; herencia de propiedades ejecutada.")
+
+    print("==================================================")
+    print("¡PIPELINE COMPLETO DE LA SEMANA 02 A LA SEMANA 14 EJECUTADO EXITOSAMENTE!")
 
 if __name__ == "__main__":
     main()

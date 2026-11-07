@@ -24,8 +24,8 @@ try:
     from classifiers.evaluacion_modelo import ejecutar_validacion
     from classifiers.vision import ejecutar_vision_soporte
     from classifiers.texturas import procesar_imagen_proyecto
-    from classifiers.texturas import procesar_imagen_proyecto, FALLOS_DESCRIPCION
-    from classifiers.motor_inferencia import inferir_con_explicacion, REGLAS_SOPORTE_TI  # <--- NUEVO S13 AVANZADO
+    from classifiers.motor_inferencia import inferir_con_explicacion, REGLAS_SOPORTE_TI
+    from classifiers.red_semantica import RedSemanticaSoporteTI, RELACIONES, RELACIONES_HEREDABLES, normalizar  # S14 REDES SEMÁNTICAS
     MODULOS_CARGADOS = True
 except ImportError as e:
     MODULOS_CARGADOS = False
@@ -56,6 +56,10 @@ st.markdown("""
         --muted: #5B6779;
         --ok: #1E8E5A;
         --ok-soft: #E7F5EE;
+        --warn: #B7791F;
+        --warn-soft: #FEF6E4;
+        --err: #C0392B;
+        --err-soft: #FCEBE9;
     }
 
     /* ---------- Base ---------- */
@@ -226,7 +230,115 @@ st.markdown("""
     [data-testid="stDataFrame"] { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
     [data-testid="stCode"] { border: 1px solid var(--line); border-radius: 10px; }
     [data-testid="stImage"] img { border-radius: 10px; border: 1px solid var(--line); }
-    [data-testid="stCaptionContainer"] { color: var(--muted); }
+    [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] * { color: var(--muted) !important; opacity: 1 !important; }
+
+    /* =====================================================================
+       SISTEMA DE DISEÑO V2: menú, desplegables, estados, gráficas y controles
+       ===================================================================== */
+
+    /* ---------- Barra lateral: grupos del menú ---------- */
+    [data-testid="stSidebar"] [role="radiogroup"] > label { position: relative; }
+    [data-testid="stSidebar"] [role="radiogroup"] > label:nth-of-type(1),
+    [data-testid="stSidebar"] [role="radiogroup"] > label:nth-of-type(3),
+    [data-testid="stSidebar"] [role="radiogroup"] > label:nth-of-type(10),
+    [data-testid="stSidebar"] [role="radiogroup"] > label:nth-of-type(12) { margin-top: 30px; }
+    [data-testid="stSidebar"] [role="radiogroup"] > label:nth-of-type(1)::before,
+    [data-testid="stSidebar"] [role="radiogroup"] > label:nth-of-type(3)::before,
+    [data-testid="stSidebar"] [role="radiogroup"] > label:nth-of-type(10)::before,
+    [data-testid="stSidebar"] [role="radiogroup"] > label:nth-of-type(12)::before {
+        position: absolute; left: 12px; top: -23px; pointer-events: none;
+        font-size: 0.68rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #6F829F;
+    }
+    [data-testid="stSidebar"] [role="radiogroup"] > label:nth-of-type(1)::before { content: "Fundamentos"; }
+    [data-testid="stSidebar"] [role="radiogroup"] > label:nth-of-type(3)::before { content: "Modelos y algoritmos"; }
+    [data-testid="stSidebar"] [role="radiogroup"] > label:nth-of-type(10)::before { content: "Conocimiento"; }
+    [data-testid="stSidebar"] [role="radiogroup"] > label:nth-of-type(12)::before { content: "Operación"; }
+
+    /* ---------- Menús desplegables (selectbox y multiselect) ---------- */
+    [data-baseweb="select"] > div { min-height: 42px; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+    [data-baseweb="select"] > div:hover { border-color: #B9C4D8; }
+    [data-baseweb="select"]:focus-within > div { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(36, 87, 214, 0.15); }
+    [data-baseweb="select"] svg { color: var(--muted); }
+    [data-baseweb="tag"] { border-radius: 6px; font-weight: 500; }
+    div[data-baseweb="popover"] { font-family: 'IBM Plex Sans', 'Segoe UI', Roboto, Arial, sans-serif; }
+    div[data-baseweb="popover"] > div {
+        border-radius: 12px; border: 1px solid var(--line); background: var(--surface);
+        box-shadow: 0 12px 32px rgba(15, 27, 45, 0.18); overflow: hidden;
+    }
+    div[data-baseweb="popover"] ul[role="listbox"], div[data-baseweb="popover"] [data-baseweb="menu"] { background: var(--surface); padding: 6px; }
+    div[data-baseweb="popover"] li[role="option"] {
+        border-radius: 8px; margin: 1px 0; padding-top: 9px; padding-bottom: 9px; font-size: 0.9rem; color: var(--text);
+    }
+    div[data-baseweb="popover"] li[role="option"]:hover,
+    div[data-baseweb="popover"] li[role="option"][data-highlighted="true"] { background: var(--accent-soft); }
+    div[data-baseweb="popover"] li[role="option"][aria-selected="true"] { background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; }
+
+    /* ---------- Estados: alertas por tipo ---------- */
+    [data-testid="stAlert"] {
+        border-radius: 10px; border: 1px solid var(--line); border-left: 4px solid var(--line);
+        box-shadow: 0 1px 2px rgba(15, 27, 45, 0.04);
+    }
+    [data-testid="stAlert"] p, [data-testid="stAlert"] li { color: var(--text); }
+    [data-testid="stAlert"] code { background: rgba(255, 255, 255, 0.8); color: var(--accent-dark); }
+    [data-testid="stAlert"]:has([data-testid="stAlertContentInfo"]) { background: var(--accent-soft); border-color: #CFDBF8; border-left-color: var(--accent); }
+    [data-testid="stAlert"]:has([data-testid="stAlertContentSuccess"]) { background: var(--ok-soft); border-color: #CBE8D8; border-left-color: var(--ok); }
+    [data-testid="stAlert"]:has([data-testid="stAlertContentWarning"]) { background: var(--warn-soft); border-color: #F2DFB5; border-left-color: var(--warn); }
+    [data-testid="stAlert"]:has([data-testid="stAlertContentError"]) { background: var(--err-soft); border-color: #F2C9C4; border-left-color: var(--err); }
+
+    /* ---------- Tarjetas de resultado de los modelos ---------- */
+    .result-card {
+        background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--tono, var(--accent));
+        border-radius: 12px; padding: 14px 18px; margin: 0 0 12px 0; box-shadow: 0 1px 2px rgba(15, 27, 45, 0.04);
+    }
+    .result-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); letter-spacing: 0.02em; margin-bottom: 4px; }
+    .result-value { font-size: 1.35rem; font-weight: 700; color: var(--text); line-height: 1.3; word-break: break-word; }
+    .result-card.texto .result-value { font-size: 0.98rem; font-weight: 500; line-height: 1.6; }
+    .result-detail {
+        display: inline-block; margin-top: 8px; padding: 2px 10px; border-radius: 6px;
+        background: var(--tono-suave, var(--accent-soft)); color: var(--tono, var(--accent)); font-size: 0.78rem; font-weight: 600;
+    }
+    .result-bar { margin-top: 10px; height: 8px; border-radius: 999px; background: #E9EDF4; overflow: hidden; }
+    .result-bar > span { display: block; height: 100%; border-radius: 999px; background: var(--tono, var(--accent)); }
+    .badge-warn { background: var(--warn-soft); color: var(--warn); border-radius: 999px; padding: 3px 11px; font-size: 0.75rem; font-weight: 600; }
+    .badge-err { background: var(--err-soft); color: var(--err); border-radius: 999px; padding: 3px 11px; font-size: 0.75rem; font-weight: 600; }
+
+    /* ---------- Gráficas e imágenes como paneles ---------- */
+    [data-testid="stPlotlyChart"], [data-testid="stVegaLiteChart"], [data-testid="stArrowVegaLiteChart"], [data-testid="stGraphVizChart"] {
+        background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+        padding: 14px 14px 8px 14px; box-shadow: 0 1px 2px rgba(15, 27, 45, 0.04);
+    }
+    [data-testid="stImage"] img { background: var(--surface); box-shadow: 0 1px 2px rgba(15, 27, 45, 0.05); }
+    [data-testid="stImageCaption"] { color: var(--muted); font-size: 0.8rem; text-align: center; }
+
+    /* ---------- Controles operativos ---------- */
+    [data-testid="stProgress"] [role="progressbar"] { height: 10px !important; border-radius: 999px; background: #E2E7F0; overflow: hidden; }
+    [data-testid="stProgress"] [role="progressbar"] > div { border-radius: 999px; }
+    [data-testid="stProgress"] p { font-size: 0.82rem; color: var(--muted); }
+    [data-testid="stSlider"] [data-testid="stThumbValue"] { color: var(--accent-dark); font-weight: 600; font-size: 0.85rem; }
+    [data-testid="stSlider"] [data-testid="stTickBarMin"], [data-testid="stSlider"] [data-testid="stTickBarMax"] { color: var(--muted); font-size: 0.75rem; }
+    [data-testid="stCheckbox"] label { padding: 6px 10px; border-radius: 8px; transition: background 0.15s ease; }
+    [data-testid="stCheckbox"] label:hover { background: var(--accent-soft); }
+    [data-testid="stCheckbox"] label p { font-size: 0.9rem; }
+    .stButton > button:active, [data-testid="stDownloadButton"] > button:active { transform: translateY(1px); box-shadow: none; }
+    .stButton > button:disabled, [data-testid="stDownloadButton"] > button:disabled {
+        background: #C5CEDC; color: #FFFFFF; box-shadow: none; cursor: not-allowed;
+    }
+    [data-testid="stFileUploaderDropzone"] { transition: border-color 0.15s ease, background 0.15s ease; }
+    [data-testid="stFileUploaderDropzone"]:hover { border-color: var(--accent); background: var(--accent-soft); }
+    [data-testid="stExpander"] summary { border-radius: 10px; transition: background 0.15s ease; }
+    [data-testid="stExpander"] summary:hover { background: #F7F9FC; }
+    [data-testid="stExpander"] details[open] > summary { border-bottom: 1px solid var(--line); border-radius: 10px 10px 0 0; }
+    [data-testid="stMetric"] { transition: box-shadow 0.15s ease; }
+    [data-testid="stMetric"]:hover { box-shadow: 0 4px 14px rgba(15, 27, 45, 0.08); }
+    [data-testid="stSpinner"] { color: var(--muted); }
+    [data-testid="stTooltipContent"] { font-size: 0.82rem; border-radius: 8px; }
+
+    /* ---------- Barras de desplazamiento ---------- */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: #C5CEDC; border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
+    ::-webkit-scrollbar-thumb:hover { background: #A9B6CB; background-clip: content-box; }
+    [data-testid="stSidebar"] ::-webkit-scrollbar-thumb { background: #2A3E5C; background-clip: content-box; }
+    [data-testid="stSidebar"] ::-webkit-scrollbar-track { background: transparent; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -240,6 +352,122 @@ def encabezado(titulo, descripcion=""):
     d = _re.sub(r"`(.+?)`", r"<code>\1</code>", d)
     cuerpo = f"<p>{d}</p>" if d else ""
     st.markdown(f'<div class="page-head"><h1>{t}</h1>{cuerpo}</div>', unsafe_allow_html=True)
+
+# --- Componentes visuales reutilizables (solo presentación) ---
+def tarjeta_resultado(etiqueta, valor, detalle="", tono="azul", progreso=None, texto=False):
+    """Tarjeta de resultado de un modelo: etiqueta, valor, detalle opcional y barra de progreso 0-1."""
+    import html as _h
+    tonos = {"azul": ("#2457D6", "#E8EEFC"), "verde": ("#1E8E5A", "#E7F5EE"),
+             "ambar": ("#B7791F", "#FEF6E4"), "rojo": ("#C0392B", "#FCEBE9"), "gris": ("#5B6779", "#EDF1F8")}
+    fuerte, suave = tonos.get(tono, tonos["azul"])
+    clase = "result-card texto" if texto else "result-card"
+    partes = [f'<div class="{clase}" style="--tono:{fuerte};--tono-suave:{suave}">',
+              f'<div class="result-label">{_h.escape(str(etiqueta))}</div>',
+              f'<div class="result-value">{_h.escape(str(valor))}</div>']
+    if detalle:
+        partes.append(f'<div class="result-detail">{_h.escape(str(detalle))}</div>')
+    if progreso is not None:
+        try:
+            pct = max(0.0, min(1.0, float(progreso))) * 100
+            partes.append(f'<div class="result-bar"><span style="width:{pct:.1f}%"></span></div>')
+        except (TypeError, ValueError):
+            pass
+    partes.append("</div>")
+    st.markdown("".join(partes), unsafe_allow_html=True)
+
+def estilo_plotly(fig):
+    """Aplica la paleta, tipografía y rejilla del dashboard a una figura de Plotly."""
+    fig.update_layout(
+        template="plotly_white",
+        font=dict(family="IBM Plex Sans, Segoe UI, Arial, sans-serif", size=13, color="#14213D"),
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        colorway=["#2457D6", "#0E9F8E", "#E08A1E", "#C0392B", "#7A5AF8"],
+        xaxis=dict(showgrid=False, linecolor="#C5CEDC", tickcolor="#C5CEDC", title_font=dict(size=12, color="#5B6779")),
+        yaxis=dict(gridcolor="#E9EDF4", zeroline=False, title_font=dict(size=12, color="#5B6779")),
+        hoverlabel=dict(bgcolor="#0F1B2D", font=dict(color="#FFFFFF", size=12), bordercolor="#0F1B2D"),
+    )
+    return fig
+
+def estilo_matplotlib():
+    """Estilo uniforme (paleta, tipografía, rejilla suave) para las figuras de Matplotlib."""
+    import matplotlib.pyplot as plt
+    plt.rcParams.update({
+        "font.family": "sans-serif", "font.sans-serif": ["IBM Plex Sans", "Segoe UI", "DejaVu Sans", "Arial"],
+        "font.size": 11, "axes.titlesize": 13, "axes.titleweight": "bold", "axes.titlecolor": "#14213D",
+        "axes.labelcolor": "#5B6779", "axes.edgecolor": "#C5CEDC", "axes.linewidth": 0.8,
+        "axes.spines.top": False, "axes.spines.right": False, "axes.grid": True, "axes.axisbelow": True,
+        "grid.color": "#E9EDF4", "grid.linewidth": 0.8, "xtick.color": "#5B6779", "ytick.color": "#5B6779",
+        "legend.frameon": False, "lines.linewidth": 2.0,
+        "figure.facecolor": "white", "axes.facecolor": "white", "savefig.facecolor": "white",
+    })
+    return plt
+
+# --- Redes semánticas (Semana 14): construcción de redes y grafos ---
+ORACIONES_RED_PROYECTO = [
+    "servidor_bd es un hardware_critico",
+    "hardware_critico es un activo_corporativo",
+    "activo_corporativo requiere alimentacion_redundante",
+    "estacion_trabajo es un hardware_estandar",
+    "sobrecalentamiento se resuelve con limpieza_ventilacion",
+]
+REQUISITOS_POR_CATEGORIA = {
+    "hardware": "soporte_presencial_campo",
+    "red": "monitoreo_noc_24_7",
+    "seguridad": "auditoria_cumplimiento_iso",
+}
+REQUISITO_POR_DEFECTO = "resolucion_automatizada_nivel_1"
+COLOR_RELACION = {"es_un": "#2457D6", "requiere": "#1E8E5A", "se_resuelve_con": "#B7791F"}
+
+def construir_red_proyecto():
+    """Red base de la Semana 14."""
+    red = RedSemanticaSoporteTI()
+    for oracion in ORACIONES_RED_PROYECTO:
+        red.interpretar_oracion(oracion)
+    return red
+
+def construir_red_ampliada(procs_kb):
+    """Red base + casos de la KB: caso -> categoría técnica -> activo_corporativo."""
+    red = construir_red_proyecto()
+    omitidos = []
+    for p in procs_kb:
+        try:
+            categoria = normalizar(p["categoria"])
+            nodo_categoria = f"categoria_{categoria}"
+            red.agregar_triple(p["titulo"], "es_un", nodo_categoria)
+            red.agregar_triple(nodo_categoria, "es_un", "activo_corporativo")
+            red.agregar_triple(nodo_categoria, "requiere", REQUISITOS_POR_CATEGORIA.get(categoria, REQUISITO_POR_DEFECTO))
+        except (ValueError, KeyError):
+            omitidos.append(str(p.get("titulo", "?")))
+    return red, omitidos
+
+def dot_red(triples, camino=None):
+    """Código DOT para st.graphviz_chart. Los triples de 'camino' se resaltan."""
+    resaltados = set(camino or [])
+    nodos_resaltados = {n for s, _, o in resaltados for n in (s, o)}
+    nodos = sorted({n for s, _, o in triples for n in (s, o)})
+    lineas = [
+        "digraph red {", "rankdir=LR;", 'bgcolor="transparent";', "nodesep=0.45;", "ranksep=0.9;",
+        'node [shape=box, style="rounded,filled", fillcolor="#FFFFFF", color="#C5CEDC", fontname="Helvetica", fontsize=14, fontcolor="#14213D", margin="0.18,0.09"];',
+        'edge [fontname="Helvetica", fontsize=12, arrowsize=0.9];',
+    ]
+    for n in nodos:
+        if n in nodos_resaltados:
+            lineas.append(f'"{n}" [fillcolor="#E8EEFC", color="#2457D6", penwidth=1.8];')
+        else:
+            lineas.append(f'"{n}";')
+    for s, r, o in triples:
+        color = COLOR_RELACION.get(r, "#8294AE")
+        color_texto = color
+        if resaltados and (s, r, o) not in resaltados:
+            color, color_texto = "#C5CEDC", "#8294AE"
+        grosor = 3 if (s, r, o) in resaltados else 1.2
+        estilo = "" if r == "es_un" else ", style=dashed"
+        lineas.append(f'"{s}" -> "{o}" [label="{r}", color="{color}", fontcolor="{color_texto}", penwidth={grosor}{estilo}];')
+    lineas.append("}")
+    return "\n".join(lineas)
+
+def triples_para_grafo(red, prueba):
+    return red.triples if len(red.nodos) <= 12 else prueba
 
 AUDIT_LOG_PATH = BASE_DIR / "artifacts" / "audit.log"
 KB_PATH = BASE_DIR / "data" / "base_conocimiento.txt"
@@ -359,6 +587,7 @@ menu = st.sidebar.radio(
         "Histogramas y Texturas LBP (Semana 10)",
         "Benchmark y Decisiones de Modelos (Semana 11)",
         "Motor de Inferencia (Semana 13)",
+        "Redes Semánticas (Semana 14)", 
         "Portal de Usuario",
         "Base de Conocimiento (KB)", 
         "Trazas de Auditoría"
@@ -412,7 +641,8 @@ if menu == "Resumen Ejecutivo":
             ("Visión Artificial (Semana 09)", ""),
             ("Histogramas y Texturas LBP (Semana 10)", "Extracción de Features Vectoriales"),
             ("Benchmark de Modelos y ADR (Semana 11)", "Evaluación y Serialización en artifacts/"),
-            ("Motor de Inferencia Avanzado (Semana 13)", "Reglas Horn, Trazas y Explicabilidad"),
+            ("Motor de Inferencia Avanzado (10 Reglas - Semana 13)", "Reglas Horn, Trazas y Explicabilidad"),
+            ("Redes Semánticas e Inferencia (Semana 14)", "Triples, es_un y Herencia con KB de 30 Casos"),
             ("Motor de Auditoría y Trazas", "Registrando en artifacts/audit.log"),
         ]
         filas_estado = "".join(
@@ -468,12 +698,12 @@ elif menu == "Sistema Híbrido & TF-IDF":
             col1, col2 = st.columns(2)
             with col1:
                 st.markdown("### Resultados del Motor")
-                st.info(f"**Reglas Activadas:** `{resultado['reglas']}`")
-                st.warning(f"**Clase Predicha (ML):** `{resultado['clase']}`")
-                st.metric(label="Similitud Coseno", value=f"{resultado['similitud']:.4f}")
+                tarjeta_resultado("Reglas activadas", resultado['reglas'], tono="azul")
+                tarjeta_resultado("Clase predicha (ML)", resultado['clase'], tono="ambar")
+                tarjeta_resultado("Similitud coseno", f"{resultado['similitud']:.4f}", tono="verde", progreso=resultado['similitud'])
             with col2:
                 st.markdown("### Evidencia Recuperada (TF-IDF)")
-                st.success(f"{resultado['evidencia']}")
+                tarjeta_resultado("Procedimiento recuperado", resultado['evidencia'], tono="verde", texto=True)
         else:
             st.error("No se pudieron cargar los módulos de Python desde la carpeta `src/`.")
 
@@ -759,7 +989,7 @@ elif menu == "Red Neuronal & Ontología":
                 entrada = np.array([[f1, f2, f3, f4]])
                 prediccion = clf.predict(entrada)[0]
                 mapa_clases = {0: "Hardware", 1: "Red", 2: "Software", 3: "Seguridad"}
-                st.success(f"Categoría Predicha por el Modelo: **{mapa_clases.get(prediccion, 'Desconocida')}** (Clase ID: {prediccion})")
+                tarjeta_resultado("Categoría predicha por el modelo", mapa_clases.get(prediccion, 'Desconocida'), detalle=f"Clase ID: {prediccion}", tono="verde")
             else:
                 st.warning("Primero debes ejecutar `python src/main.py` para generar el modelo entrenado.")
                 
@@ -867,7 +1097,7 @@ elif menu == "Visión Artificial (Semana 09)":
         st.info("""
         **Análisis Técnico del Procesamiento:**
         * **Contornos (Canny):** Identifica los cambios bruscos de intensidad en los píxeles, marcando los límites físicos y estructurales del hardware defectuoso para aislar su forma.
-        * **Umbral Automático (Otsu):** Calcula matemáticamente el punto óptimo en el histograma de la imagen para separar los píxeles en dos clases (claro/oscuro), generando una máscara binaria.
+        * **Umbral Automático (Otsu):** Calcula matemáticamente el punto óptimo en el histograma de la imagen para separar los píxeles en deux clases (claro/oscuro), generando una máscara binaria.
         * **Regiones Conectadas:** La máscara permite al sistema contar grupos de píxeles unidos, lo cual es el primer paso para aislar piezas o zonas afectadas antes de pasarlas a una red neuronal convolucional.
         """)
     else:
@@ -920,6 +1150,7 @@ elif menu == "Histogramas y Texturas LBP (Semana 10)":
             with st.spinner("Procesando características, histogramas y texturas LBP para ambos estados..."):
                 try:
                     import matplotlib.pyplot as plt
+                    estilo_matplotlib()
                     
                     img_a, mask_a, hist_int_a, hist_lbp_a, feat_a = procesar_imagen_proyecto(img_buena_nombre)
                     img_b, mask_b, hist_int_b, hist_lbp_b, feat_b = procesar_imagen_proyecto(img_mala_nombre)
@@ -934,20 +1165,20 @@ elif menu == "Histogramas y Texturas LBP (Semana 10)":
                     axes[0, 1].set_title(f"Averiado: {img_mala_nombre}")
                     axes[0, 1].axis('off')
                     
-                    axes[1, 0].plot(hist_int_a, label="Intensidad (Sano)", color='blue')
-                    axes[1, 0].plot(hist_lbp_a, label="LBP Textura (Sano)", color='orange')
+                    axes[1, 0].plot(hist_int_a, label="Intensidad (Sano)", color="#2457D6")
+                    axes[1, 0].plot(hist_lbp_a, label="LBP Textura (Sano)", color="#E08A1E")
                     axes[1, 0].set_title(f"Histogramas - {img_buena_nombre}")
                     axes[1, 0].legend(loc="upper right")
                     
-                    axes[1, 1].plot(hist_int_b, label="Intensidad (Averiado)", color='green')
-                    axes[1, 1].plot(hist_lbp_b, label="LBP Textura (Averiado)", color='red')
+                    axes[1, 1].plot(hist_int_b, label="Intensidad (Averiado)", color="#0E9F8E")
+                    axes[1, 1].plot(hist_lbp_b, label="LBP Textura (Averiado)", color="#C0392B")
                     axes[1, 1].set_title(f"Histogramas - {img_mala_nombre}")
                     axes[1, 1].legend(loc="upper right")
                     
                     plt.tight_layout()
                     artifact_path = BASE_DIR / "artifacts" / "semana10_comparativa.png"
                     artifact_path.parent.mkdir(parents=True, exist_ok=True)
-                    plt.savefig(artifact_path)
+                    plt.savefig(artifact_path, dpi=150, bbox_inches="tight")
                     plt.close()
 
                     st.session_state['s10_feat_bueno'] = feat_a
@@ -1030,16 +1261,16 @@ elif menu == "Benchmark y Decisiones de Modelos (Semana 11)":
             color="modelo",
             color_discrete_sequence=["#2457D6", "#0E9F8E", "#E08A1E"]
         )
-        fig.update_traces(texttemplate='%{text:.4f}', textposition='outside')
+        fig.update_traces(texttemplate='%{text:.4f}', textposition='outside', textfont=dict(size=13, color="#14213D"), cliponaxis=False)
         fig.update_layout(
             yaxis=dict(range=[0.90, 1.02]),
             margin=dict(t=20, b=20, l=20, r=20),
             height=400,
             showlegend=False
         )
+        fig = estilo_plotly(fig)
         st.plotly_chart(fig, use_container_width=True)
         
-        # --- ANÁLISIS DINÁMICO DE LA GRÁFICA (Basado en datos reales del CSV) ---
         df_sorted = df_bench.sort_values("accuracy", ascending=False).reset_index(drop=True)
         
         ganador_nombre = df_sorted.iloc[0]["modelo"]
@@ -1074,17 +1305,22 @@ elif menu == "Benchmark y Decisiones de Modelos (Semana 11)":
     else:
         st.warning("No se encontró el archivo de benchmark. Ejecuta `python src/semana11_benchmark.py` para generarlo.")
 
-# --- 10. Motor de Inferencia Avanzado (Semana 13) ---
+# --- 10. Motor de Inferencia Avanzado (10 Reglas - Semana 13) ---
 elif menu == "Motor de Inferencia (Semana 13)":
-    encabezado("Ingeniería del Conocimiento: Motor de Inferencia Lógica (Semana 13)", "Evaluación de reglas Horn por encadenamiento hacia adelante con trazabilidad y explicabilidad paso a paso para el Asistente de Soporte TI.")
+    encabezado("Ingeniería del Conocimiento: Motor de Inferencia Lógica (10 Reglas)", "Evaluación de reglas Horn por encadenamiento hacia adelante con trazabilidad y explicabilidad paso a paso para el Asistente de Soporte TI.")
     
-    st.markdown("### 📋 Catálogo Extendido de Reglas del Sistema")
+    st.markdown("### Catálogo Extendido de Reglas del Sistema (10 Reglas de Cobertura KB)")
     st.markdown("""
     - **R1:** $\\text{imagen\\_procesada\\_ok} \\land \\text{textura\\_anomala\\_detectada} \\longrightarrow \\text{diagnostico\\_hardware\\_fallido}$
     - **R2:** $\\text{diagnostico\\_hardware\\_fallido} \\land \\text{hardware\\_critico} \\longrightarrow \\text{escalamiento\\_nivel\\_2}$
     - **R3:** $\\text{escalamiento\\_nivel\\_2} \\land \\text{sla\\_excedido} \\longrightarrow \\text{prioridad\\_critica\\_urgente}$
     - **R4:** $\\text{conexion\\_intermitente} \\land \\text{alta\\_latencia} \\longrightarrow \\text{falla\\_enlace\\_wan}$
     - **R5:** $\\text{falla\\_enlace\\_wan} \\land \\text{impacto\\_critico} \\longrightarrow \\text{escalamiento\\_redes\\_nivel\\_3}$
+    - **R6:** $\\text{espacio\\_disco\\_insuficiente} \\land \\text{archivos\\_temporales\\_excesivos} \\longrightarrow \\text{saturacion\\_almacenamiento}$
+    - **R7:** $\\text{saturacion\\_almacenamiento} \\longrightarrow \\text{ejecutar\\_script\\_liberacion\\_disco}$
+    - **R8:** $\\text{intentos\\_fallidos\\_login} \\land \\text{bloqueo\\_cuenta\\_activo\\_directory} \\longrightarrow \\text{incidente\\_seguridad\\_credenciales}$
+    - **R9:** $\\text{incidente\\_seguridad\\_credenciales} \\land \\text{acceso\\_no\\_autorizado\\_detectado} \\longrightarrow \\text{aislamiento\\_dispositivo\\_red}$
+    - **R10:** $\\text{error\\_runtime\\_aplicacion} \\land \\text{cierre\\_inesperado\\_nomina} \\longrightarrow \\text{falla\\_critica\\_software\\_negocio}$
     """)
     
     st.markdown("---")
@@ -1098,10 +1334,12 @@ elif menu == "Motor de Inferencia (Semana 13)":
         hecho_3 = st.checkbox("hardware_critico", value=True)
         hecho_4 = st.checkbox("sla_excedido", value=True)
     with col_esc2:
-        st.markdown("**Selecciona las evidencias de Red / WAN:**")
+        st.markdown("**Selecciona las evidencias de Red / Almacenamiento / Seguridad:**")
         hecho_5 = st.checkbox("conexion_intermitente", value=False)
         hecho_6 = st.checkbox("alta_latencia", value=False)
         hecho_7 = st.checkbox("impacto_critico", value=False)
+        hecho_8 = st.checkbox("espacio_disco_insuficiente", value=False)
+        hecho_9 = st.checkbox("archivos_temporales_excesivos", value=False)
         
     hechos_usuario = set()
     if hecho_1: hechos_usuario.add("imagen_procesada_ok")
@@ -1111,6 +1349,8 @@ elif menu == "Motor de Inferencia (Semana 13)":
     if hecho_5: hechos_usuario.add("conexion_intermitente")
     if hecho_6: hechos_usuario.add("alta_latencia")
     if hecho_7: hechos_usuario.add("impacto_critico")
+    if hecho_8: hechos_usuario.add("espacio_disco_insuficiente")
+    if hecho_9: hechos_usuario.add("archivos_temporales_excesivos")
     
     if st.button("Ejecutar Motor de Inferencia con Explicabilidad"):
         if MODULOS_CARGADOS:
@@ -1125,7 +1365,7 @@ elif menu == "Motor de Inferencia (Semana 13)":
                 st.markdown("#### Traza de Reglas Activadas")
                 st.success(trazas if trazas else "Ninguna regla activada.")
                 
-            st.markdown("#### 🔍 Explicabilidad Paso a Paso (Modus Ponens)")
+            st.markdown("#### Explicabilidad Paso a Paso (Modus Ponens)")
             if explicaciones:
                 for exp in explicaciones:
                     st.markdown(f"- {exp}")
@@ -1134,14 +1374,144 @@ elif menu == "Motor de Inferencia (Semana 13)":
                 
             if "prioridad_critica_urgente" in hechos_finales:
                 st.error("**Conclusión Demostrada:** `prioridad_critica_urgente` alcanzada con éxito.")
-            elif "escalamiento_redes_nivel_3" in hechos_finales:
-                st.error("**Conclusión Demostrada:** `escalamiento_redes_nivel_3` alcanzada con éxito.")
+            elif "ejecutar_script_liberacion_disco" in hechos_finales:
+                st.success("**Conclusión Demostrada:** `ejecutar_script_liberacion_disco` alcanzada con éxito (Automatización ejecutada).")
             else:
-                st.warning("**Conclusión No Demostrada:** Faltan premisas intermedias para llegar a la conclusión final (esto no significa que sea falsa, sino insuficiente en evidencia).")
+                st.warning("**Conclusión No Demostrada:** Faltan premisas intermedias para llegar a la conclusión final.")
         else:
             st.error("Módulos no disponibles.")
 
-# --- 11. Portal de Usuario ---
+# --- 11. Redes Semánticas (Semana 14) ---
+elif menu == "Redes Semánticas (Semana 14)":
+    encabezado("Ingeniería del Conocimiento: Redes Semánticas (Semana 14)", "Modelado de conceptos de soporte TI, triples semánticos, inferencia por jerarquía (es_un) y herencia de propiedades.")
+
+    if MODULOS_CARGADOS:
+        procs_kb = cargar_base_conocimiento()
+        red_proyecto = construir_red_proyecto()
+        red_ampliada, kb_omitidos = construir_red_ampliada(procs_kb)
+
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Conceptos del proyecto", len(red_proyecto.nodos), "Red base", delta_color="off")
+        m2.metric("Triples explícitos", len(red_proyecto.triples), "Hechos almacenados", delta_color="off")
+        m3.metric("Relaciones", len(RELACIONES), "Vocabulario controlado", delta_color="off")
+        m4.metric("Casos de la KB", len(procs_kb), f"Red ampliada: {len(red_ampliada.nodos)} conceptos", delta_color="off")
+        st.markdown("")
+
+        tab_red, tab_oracion, tab_consulta, tab_kb = st.tabs([
+            "Red del proyecto", "Interpretar oraciones", "Consultas e inferencias", "Red ampliada (KB)"
+        ])
+
+        with tab_red:
+            st.subheader("Grafo de conocimiento del proyecto")
+            st.caption("Cada flecha es un triple (sujeto, relación, objeto). Azul: es_un. Verde: requiere. Ámbar discontinuo: se_resuelve_con.")
+            st.graphviz_chart(dot_red(red_proyecto.triples))
+            st.markdown("#### Triples explícitos")
+            st.dataframe(pd.DataFrame(red_proyecto.triples, columns=["Sujeto", "Relación", "Objeto"]),
+                         use_container_width=True, hide_index=True)
+            st.markdown("#### Relaciones y su significado")
+            st.table(pd.DataFrame([
+                {"Relación": r, "Significado": d, "Transitiva": "Sí" if r == "es_un" else "No",
+                 "Se hereda": "Sí" if r in RELACIONES_HEREDABLES else "No"}
+                for r, d in RELACIONES.items()
+            ]).set_index("Relación"))
+
+        with tab_oracion:
+            st.subheader("De una oración a un triple semántico")
+            st.markdown("Formatos admitidos: `<A> es un <B>`, `<A> requiere <B>` (o `necesita`) y `<A> se resuelve con <B>`.")
+            oracion = st.text_input("Escribe una oración simple:", "El Servidor BD es un Hardware Crítico.", key="s14_oracion")
+            if oracion.strip():
+                try:
+                    sujeto, relacion, objeto = red_proyecto.interpretar_oracion(oracion, registrar=False)
+                    st.success("Oración interpretada correctamente.")
+                    st.code(f"({sujeto!r}, {relacion!r}, {objeto!r})", language="python")
+                    st.caption("Se normalizó el texto: minúsculas, sin tildes, sin artículo inicial y con guion bajo entre palabras.")
+                except ValueError as error:
+                    st.error("Oración rechazada: no tiene un formato admitido.")
+                    st.text(str(error))
+            with st.expander("Ejemplos para probar"):
+                st.markdown(
+                    "**Válidas**\n\n"
+                    "- `servidor_bd necesita respaldo_diario`\n"
+                    "- `sobrecalentamiento se resuelve con limpieza_ventilacion`\n\n"
+                    "**Rechazadas**\n\n"
+                    "- `el procesador funciona muy lento hoy` (sin formato reconocido)\n"
+                    "- `servidor_bd es un` (falta el objeto)"
+                )
+
+        with tab_consulta:
+            opciones_red = [f"Red del proyecto ({len(red_proyecto.nodos)} conceptos)",
+                            f"Red ampliada ({len(red_ampliada.nodos)} conceptos, con la KB)"]
+            alcance = st.radio("Red a consultar", opciones_red, horizontal=True, key="s14_alcance")
+            es_base = alcance == opciones_red[0]
+            red_q = red_proyecto if es_base else red_ampliada
+            sufijo = "base" if es_base else "kb"
+            nodos = sorted(red_q.nodos)
+
+            def _indice(nombre):
+                return nodos.index(nombre) if nombre in nodos else 0
+
+            st.markdown("#### Inferencia por jerarquía (es_un)")
+            c1, c2 = st.columns(2)
+            origen = c1.selectbox("Concepto origen", nodos, index=_indice("servidor_bd"), key=f"s14_origen_{sufijo}")
+            destino = c2.selectbox("¿Es un...? (categoría)", nodos, index=_indice("activo_corporativo"), key=f"s14_destino_{sufijo}")
+
+            camino = red_q.explicar_es_un(origen, destino)
+            if camino is None:
+                st.error(f"Sin evidencia: con los hechos registrados no se puede concluir que **{origen}** sea un **{destino}**.")
+            elif not camino:
+                st.info("Identidad: es el mismo concepto.")
+            else:
+                tipo = "hecho explícito" if len(camino) == 1 else "inferido por transitividad (R1)"
+                st.success(f"**{origen} es_un {destino}**: {tipo}.")
+                for i, (s, r, o) in enumerate(camino, 1):
+                    st.markdown(f"**Hecho {i}.** `({s}, {r}, {o})`")
+                if len(camino) > 1:
+                    st.markdown("**Regla R1 (transitividad).** Si A es_un B y B es_un C, entonces A es_un C.")
+                st.graphviz_chart(dot_red(triples_para_grafo(red_q, camino), camino))
+
+            st.markdown("---")
+            st.markdown("#### Herencia de propiedades (requiere)")
+            concepto = st.selectbox("Concepto", nodos, index=_indice("servidor_bd"), key=f"s14_concepto_{sufijo}")
+            props = red_q.propiedades_con_origen(concepto)
+            if props:
+                filas = []
+                for d in props:
+                    cadena = " -> ".join([d["ruta"][0][0]] + [t[2] for t in d["ruta"]]) if d["ruta"] else concepto
+                    filas.append({"Propiedad": d["propiedad"], "Declarada en": d["declarada_en"],
+                                  "Origen": "Propia" if not d["ruta"] else "Heredada (R2)", "Cadena es_un": cadena})
+                st.dataframe(pd.DataFrame(filas), use_container_width=True, hide_index=True)
+                st.caption("R2 (herencia): si A es_un B y B requiere P, entonces A requiere P.")
+                prueba = [t for d in props for t in d["ruta"]] + [(d["declarada_en"], "requiere", d["propiedad"]) for d in props]
+                st.graphviz_chart(dot_red(triples_para_grafo(red_q, prueba), prueba))
+            else:
+                st.info(f"Sin evidencia: '{concepto}' no tiene propiedades propias ni heredadas en la red.")
+
+            with st.expander("Relaciones directas y subtipos de un concepto"):
+                explorado = st.selectbox("Concepto a explorar", nodos, index=_indice("hardware_critico"), key=f"s14_explorar_{sufijo}")
+                rel = red_q.conceptos_relacionados(explorado)
+                salientes = "\n".join(f"- `{explorado}` **{r}** `{o}`" for r, o in rel["salientes"]) or "- Ninguna"
+                entrantes = "\n".join(f"- `{s}` **{r}** `{explorado}`" for s, r in rel["entrantes"]) or "- Ninguna"
+                subtipos = ", ".join(f"`{x}`" for x in red_q.subtipos(explorado)) or "ninguno"
+                st.markdown(f"**Relaciones que salen**\n\n{salientes}\n\n**Relaciones que llegan**\n\n{entrantes}\n\n**Subtipos:** {subtipos}")
+
+        with tab_kb:
+            st.subheader(f"Los {len(procs_kb)} casos de la KB dentro de la red")
+            st.markdown("Cada caso es_un categoría técnica; cada categoría es_un activo_corporativo y requiere un recurso propio. Por R2, cada caso hereda esos requisitos.")
+            conteo = pd.Series([normalizar(p["categoria"]) for p in procs_kb]).value_counts()
+            st.dataframe(pd.DataFrame([
+                {"Categoría": cat, "Casos": int(n),
+                 "Requisitos heredados": ", ".join(red_ampliada.consultar_propiedades(f"categoria_{cat}"))}
+                for cat, n in conteo.items()
+            ]), use_container_width=True, hide_index=True)
+            st.markdown("#### Triples de la red ampliada")
+            st.dataframe(pd.DataFrame(red_ampliada.triples, columns=["Sujeto", "Relación", "Objeto"]),
+                         use_container_width=True, hide_index=True, height=320)
+            if kb_omitidos:
+                st.caption(f"Casos omitidos por no poder normalizarse: {', '.join(kb_omitidos)}")
+    else:
+        st.error("El módulo de Redes Semánticas (`classifiers.red_semantica`) no está disponible.")
+
+# --- 12. Portal de Usuario ---
 elif menu == "Portal de Usuario":
     encabezado("Portal / Cliente Final", "Interfaz orientada al usuario final para la creación de solicitudes de soporte.")
     usuario_nombre = st.text_input("Nombre:", "Carlos Pérez")
@@ -1149,14 +1519,14 @@ elif menu == "Portal de Usuario":
     if st.button("Enviar Solicitud"):
         st.success(f"¡Ticket registrado con éxito para {usuario_nombre}!")
 
-# --- 12. Base de Conocimiento (KB) ---
+# --- 13. Base de Conocimiento (KB) ---
 elif menu == "Base de Conocimiento (KB)":
     encabezado("Base de Conocimiento Técnica (KB)", "Catálogo de los 30 procedimientos operativos estandarizados.")
     for proc in cargar_base_conocimiento()[:10]:
         with st.expander(f"#{proc['id']} - {proc['titulo']} [{proc['categoria']}]"):
             st.markdown(f"**Solución:** {proc['solucion']}")
 
-# --- 13. Trazas de Auditoría ---
+# --- 14. Trazas de Auditoría ---
 elif menu == "Trazas de Auditoría":
     encabezado("Registro de Auditoría del Sistema (audit.log)", "Monitoreo de eventos generados por el orquestador.")
     registros, raw_text = parsear_audit_log()

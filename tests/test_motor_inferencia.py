@@ -19,10 +19,7 @@ class TestMotorInferenciaAvanzado(unittest.TestCase):
         self.assertTrue(len(explicacion) > 0)
 
     def test_caso_b_conclusion_no_demostrada(self):
-        """
-        Caso B: Faltando la evidencia de SLA excedido, la conclusión final no se demuestra.
-        Nota pedagógica: 'No demostrada' no significa falsa, sino que faltaron premisas en la entrada.
-        """
+        """Caso B: Faltando la evidencia de SLA excedido, la conclusión final no se demuestra."""
         hechos_iniciales = {
             "imagen_procesada_ok",
             "textura_anomala_detectada",
@@ -37,7 +34,7 @@ class TestMotorInferenciaAvanzado(unittest.TestCase):
         self.assertNotIn("R3", trazas)
 
     def test_conservacion_hechos_iniciales(self):
-        """Verifica que el conjunto de hechos iniciales no sea mutado durante la ejecución del motor."""
+        """Verifica que el conjunto de hechos iniciales no sea mutado durante la ejecución."""
         hechos_iniciales = {"imagen_procesada_ok", "textura_anomala_detectada"}
         hechos_originales = hechos_iniciales.copy()
         
@@ -46,7 +43,7 @@ class TestMotorInferenciaAvanzado(unittest.TestCase):
         self.assertEqual(hechos_iniciales, hechos_originales)
 
     def test_ausencia_ciclos_infinitos(self):
-        """Verifica que dependencias circulares positivas no generen bucles infinitos gracias a la validación de conclusión nueva."""
+        """Verifica que dependencias circulares positivas no generen bucles infinitos."""
         reglas_ciclicas = [
             Regla("RC1", frozenset({"a"}), "b", "Ciclo 1"),
             Regla("RC2", frozenset({"b"}), "a", "Ciclo 2")

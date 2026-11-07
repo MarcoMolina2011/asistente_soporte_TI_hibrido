@@ -20,15 +20,15 @@ Los tres modelos funcionales implementados obtuvieron los siguientes resultados 
 
 | Modelo | Accuracy | Tiempo de Entrenamiento (s) |
 | :--- | :--- | :--- |
-| **MLPClassifier (Red Neuronal)** | 0.9800 | 1.832 |
-| **Logistic Regression (Línea Base)** | 0.9778 | 0.091 |
-| **Random Forest (Ensamble)** | 0.9667 | 0.658 |
+| **MLPClassifier (Red Neuronal)** | 0.9800 | 2.986 |
+| **Logistic Regression (Línea Base)** | 0.9778 | 0.057 |
+| **Random Forest (Ensamble)** | 0.9667 | 1.283 |
 
 ## 4. Análisis Analítico de la Gráfica Comparativa
 A partir de la visualización de los resultados en el dashboard, se identifican las siguientes dinámicas de rendimiento:
 1. **Rendimiento de la Línea Base:** *Logistic Regression* confirma que el problema de clasificación cuenta con fuerte tendencia lineal, logrando un notable nivel de accuracy con un costo computacional mínimo.
 2. **Superioridad del Modelo Ganador:** *MLPClassifier (Red Neuronal)* maximiza el acierto predictivo alcanzando **98.00%**, lo cual reduce al mínimo los falsos positivos en el triaje de tickets críticos de Nivel 1.
-3. **Análisis de Costo-Beneficio:** Aunque el tiempo de entrenamiento del modelo seleccionado es de **1.832 segundos**, este costo es despreciable dado que el entrenamiento se realiza de forma offline, priorizando una alta precisión en la inferencia en tiempo real.
+3. **Análisis de Costo-Beneficio:** Aunque el tiempo de entrenamiento del modelo seleccionado es de **2.986 segundos**, este costo es despreciable dado que el entrenamiento se realiza de forma offline, priorizando una alta precisión en la inferencia en tiempo real.
 
 ## 5. Decisión Técnica y Justificación
 * **Modelo Seleccionado:** **MLPClassifier (Red Neuronal)**.

@@ -55,8 +55,9 @@ def inferir_con_explicacion(hechos_iniciales: Set[str], reglas: List[Regla]) -> 
                 
     return hechos, trazas, pasos_explicacion
 
-# Catálogo ampliado de reglas originales para el Asistente de Soporte TI (5 Reglas)
+# Catálogo ampliado de 10 reglas para cubrir las categorías y los 30 casos de la Base de Conocimiento
 REGLAS_SOPORTE_TI = [
+    # --- Bloque 1: Diagnóstico de Hardware y Componentes Físicos ---
     Regla(
         nombre="R1",
         premisas=frozenset({"imagen_procesada_ok", "textura_anomala_detectada"}),
@@ -75,6 +76,8 @@ REGLAS_SOPORTE_TI = [
         conclusion="prioridad_critica_urgente",
         descripcion="Si el ticket escalado a Nivel 2 excede su SLA, se clasifica como prioridad crítica y urgente."
     ),
+    
+    # --- Bloque 2: Diagnóstico de Red, Conectividad y WAN ---
     Regla(
         nombre="R4",
         premisas=frozenset({"conexion_intermitente", "alta_latencia"}),
@@ -86,11 +89,47 @@ REGLAS_SOPORTE_TI = [
         premisas=frozenset({"falla_enlace_wan", "impacto_critico"}),
         conclusion="escalamiento_redes_nivel_3",
         descripcion="Si la falla de enlace WAN genera impacto crítico corporativo, se deriva a ingeniería de redes Nivel 3."
+    ),
+
+    # --- Bloque 3: Almacenamiento, Rendimiento y Memoria ---
+    Regla(
+        nombre="R6",
+        premisas=frozenset({"espacio_disco_insuficiente", "archivos_temporales_excesivos"}),
+        conclusion="saturacion_almacenamiento",
+        descripcion="Si el disco está lleno y hay acumulación de temporales, se clasifica como saturación de almacenamiento."
+    ),
+    Regla(
+        nombre="R7",
+        premisas=frozenset({"saturacion_almacenamiento"}),
+        conclusion="ejecutar_script_liberacion_disco",
+        descripcion="Si existe saturación de almacenamiento, el sistema automatizado ejecuta el script de limpieza de disco."
+    ),
+
+    # --- Bloque 4: Seguridad y Control de Accesos ---
+    Regla(
+        nombre="R8",
+        premisas=frozenset({"intentos_fallidos_login", "bloqueo_cuenta_activo_directory"}),
+        conclusion="incidente_seguridad_credenciales",
+        descripcion="Si hay múltiples intentos fallidos y bloqueo en Active Directory, se detecta un incidente de credenciales."
+    ),
+    Regla(
+        nombre="R9",
+        premisas=frozenset({"incidente_seguridad_credenciales", "acceso_no_autorizado_detectado"}),
+        conclusion="aislamiento_dispositivo_red",
+        descripcion="Si el incidente de credenciales incluye acceso sospechoso, se procede al aislamiento inmediato del equipo."
+    ),
+
+    # --- Bloque 5: Software y Aplicaciones de Negocio ---
+    Regla(
+        nombre="R10",
+        premisas=frozenset({"error_runtime_aplicacion", "cierre_inesperado_nomina"}),
+        conclusion="falla_critica_software_negocio",
+        descripcion="Si hay un error de runtime y cierre inesperado en software fiscal/nómina, se determina falla crítica de software."
     )
 ]
 
 if __name__ == "__main__":
-    print("=== DEMOSTRACIÓN DEL MOTOR DE INFERENCIA MEJORADO ===")
+    print("=== DEMOSTRACIÓN DEL MOTOR DE INFERENCIA AMPLIADO (10 REGLAS) ===")
     hechos_demo = {"imagen_procesada_ok", "textura_anomala_detectada", "hardware_critico", "sla_excedido"}
     finales, trazas, explicacion = inferir_con_explicacion(hechos_demo, REGLAS_SOPORTE_TI)
     print(f"Hechos deducidos: {finales}")
